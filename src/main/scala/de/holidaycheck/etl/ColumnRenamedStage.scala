@@ -5,7 +5,8 @@ import de.holidaycheck.middleware.{DataFrameOps, DataStage}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 class ColumnRenamedStage(column: String, columnRenamed: String)(implicit
-    spark: SparkSession
+    spark: SparkSession,
+    rowKey: String
 ) extends DataStage[DataFrame] {
 
   override val stage: String = getClass.getSimpleName

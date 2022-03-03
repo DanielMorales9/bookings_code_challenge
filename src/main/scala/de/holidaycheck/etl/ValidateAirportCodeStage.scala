@@ -5,8 +5,9 @@ import de.holidaycheck.middleware.{DataError, DataFrameOps, DataStage}
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-class ValidateAirportCodeStage(rowKey: String, columnName: String)(implicit
-    spark: SparkSession
+class ValidateAirportCodeStage(columnName: String)(implicit
+    spark: SparkSession,
+    rowKey: String
 ) extends DataStage[DataFrame] {
 
   override val stage: String = getClass.getSimpleName

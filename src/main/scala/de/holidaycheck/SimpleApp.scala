@@ -13,6 +13,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object SimpleApp {
   implicit val spark: SparkSession = init_spark_session
+  implicit val rowKey: String = "booking_id"
 
   private def runCancellationPipeline: DataFrame = {
     val cancellationSource = "cancellation.csv"
@@ -31,9 +32,9 @@ object SimpleApp {
     val cancellationPipeline = List(
       new ColumnRenamedStage("enddate", "end_date"),
       new ColumnRenamedStage("bookingid", "booking_id"),
-      new ValidateNotNullColumnStage("booking_id", "end_date"),
-      new ValidateNotNullColumnStage("booking_id", "cancellation_type"),
-      new ParseDateTimeStringStage("booking_id", "end_date")
+      new ValidateNotNullColumnStage("end_date"),
+      new ValidateNotNullColumnStage("cancellation_type"),
+      new ParseDateTimeStringStage("end_date")
     )
 
     val (cancellationErrors, cancellationDf) =
@@ -63,16 +64,16 @@ object SimpleApp {
       .csv(quote = Some("\""), schema = Some(bookingSchema))
 
     val bookingPipeline = List(
-      new ValidateNotNullColumnStage("booking_id", "booking_date"),
-      new ValidateNotNullColumnStage("booking_id", "arrival_date"),
-      new ValidateNotNullColumnStage("booking_id", "departure_date"),
-      new ValidateNotNullColumnStage("booking_id", "source"),
-      new ValidateNotNullColumnStage("booking_id", "destination"),
-      new ValidateAirportCodeStage("booking_id", "source"),
-      new ValidateAirportCodeStage("booking_id", "destination"),
-      new ParseDateTimeStringStage("booking_id", "booking_date"),
-      new ParseDateTimeStringStage("booking_id", "arrival_date"),
-      new ParseDateTimeStringStage("booking_id", "departure_date")
+      new ValidateNotNullColumnStage("booking_date"),
+      new ValidateNotNullColumnStage("arrival_date"),
+      new ValidateNotNullColumnStage("departure_date"),
+      new ValidateNotNullColumnStage("source"),
+      new ValidateNotNullColumnStage("destination"),
+      new ValidateAirportCodeStage("source"),
+      new ValidateAirportCodeStage("destination"),
+      new ParseDateTimeStringStage("booking_date"),
+      new ParseDateTimeStringStage("arrival_date"),
+      new ParseDateTimeStringStage("departure_date")
     )
 
     val (bookingErrors, bookingDf) =

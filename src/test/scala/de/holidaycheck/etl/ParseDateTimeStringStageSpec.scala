@@ -21,6 +21,8 @@ class ParseDateTimeStringStageSpec
 
   import spark.implicits._
 
+  implicit val rowKey: String = "id"
+
   private def parseDateTime(
       dateTimeString: String,
       dateTimeFormat: String = "yyyy-MM-dd hh:mm:ss.SSS"
@@ -35,14 +37,13 @@ class ParseDateTimeStringStageSpec
     val testedColumn = "dateTime"
     val dateTimeString = "2021-06-26 13:38:26.000"
     val brokenDateTime = "broken_datetime"
-    val rowKey = "id"
     val sourceDF = Seq(
       ("1", dateTimeString),
       ("2", brokenDateTime)
     ).toDF(rowKey, testedColumn)
 
     val (actualErrors, actualDF) =
-      new ParseDateTimeStringStage(rowKey, testedColumn).apply(sourceDF).run
+      new ParseDateTimeStringStage(testedColumn).apply(sourceDF).run
 
     val expectedData = Seq(
       Row("1", parseDateTime(dateTimeString))

@@ -12,10 +12,10 @@ class ValidateNotNullColumnStageSpec
     with SparkSessionTestWrapper {
 
   import spark.implicits._
+  implicit val rowKey: String = "id"
 
   test("validate null column") {
 
-    val rowKey = "id"
     val testedColumn = "test_col"
     val sourceDF = Seq(
       ("1", "not_null"),
@@ -23,7 +23,7 @@ class ValidateNotNullColumnStageSpec
     ).toDF(rowKey, testedColumn)
 
     val (actualErrors, actualDF) =
-      new ValidateNotNullColumnStage(rowKey, testedColumn)
+      new ValidateNotNullColumnStage(testedColumn)
         .apply(sourceDF)
         .run
 

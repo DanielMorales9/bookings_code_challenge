@@ -5,8 +5,9 @@ import de.holidaycheck.middleware.{DataError, DataStage}
 import org.apache.spark.sql.functions.{col, to_timestamp}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-class ParseDateTimeStringStage(rowKey: String, columnName: String)(implicit
-    spark: SparkSession
+class ParseDateTimeStringStage(columnName: String)(implicit
+    spark: SparkSession,
+    rowKey: String
 ) extends DataStage[DataFrame] {
 
   override val stage: String = getClass.getSimpleName

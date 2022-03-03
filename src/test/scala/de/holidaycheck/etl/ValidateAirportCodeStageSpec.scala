@@ -12,10 +12,10 @@ class ValidateAirportCodeStageSpec
     with SparkSessionTestWrapper {
 
   import spark.implicits._
+  implicit val rowKey: String = "id"
 
   test("validate airport code") {
     val testedColumn = "airport_code"
-    val rowKey = "id"
     val sourceDF = Seq(
       ("1", "CGN"),
       ("2", "1"),
@@ -23,7 +23,7 @@ class ValidateAirportCodeStageSpec
     ).toDF(rowKey, testedColumn)
 
     val (actualErrors, actualDF) =
-      new ValidateAirportCodeStage(rowKey, testedColumn)
+      new ValidateAirportCodeStage(testedColumn)
         .apply(sourceDF)
         .run
 
@@ -60,7 +60,6 @@ class ValidateAirportCodeStageSpec
           )
         )
       )
-      .sort("rowKey")
 
     assertSmallDataFrameEquality(actualDF, expectedDF)
 
