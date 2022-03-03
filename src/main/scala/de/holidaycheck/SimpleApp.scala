@@ -1,7 +1,11 @@
 package de.holidaycheck
 
 import cats.data.Writer
-import de.holidaycheck.etl.{ColumnRenamedStage, DataLoader, DateTimeFormatStage}
+import de.holidaycheck.etl.{
+  ColumnRenamedStage,
+  DataLoader,
+  ParseDateTimeStringStage
+}
 import de.holidaycheck.middleware.DataFrameOps
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -21,12 +25,13 @@ object SimpleApp {
       )
     )
 
-    val initDf = new DataLoader(cancellationSource).csv(quote = Some("\""), schema = Some(cancellationSchema))
+    val initDf = new DataLoader(cancellationSource)
+      .csv(quote = Some("\""), schema = Some(cancellationSchema))
 
     val pipeline = List(
       new ColumnRenamedStage("enddate", "end_date"),
       new ColumnRenamedStage("bookingid", "booking_id"),
-      new DateTimeFormatStage("end_date")
+      new ParseDateTimeStringStage("end_date")
     )
 
     val df = Writer(DataFrameOps.emptyErrorDataset(spark), initDf)
@@ -56,23 +61,26 @@ object SimpleApp {
         StructField("arrival_date", StringType, nullable = false),
         StructField("departure_date", StringType, nullable = false),
         StructField("source", StringType, nullable = false),
-        StructField("destination", StringType, nullable = false))
+        StructField("destination", StringType, nullable = false)
+      )
     )
 
-    val initDf = new DataLoader(bookingSource).csv(quote = Some("\""), schema = Some(bookingSchema))
+    val initDf = new DataLoader(bookingSource)
+      .csv(quote = Some("\""), schema = Some(bookingSchema))
 
     val bookingPipeline = List(
-      new DateTimeFormatStage("booking_date"),
-      new DateTimeFormatStage("arrival_date"),
-      new DateTimeFormatStage("departure_date"),
+      new ParseDateTimeStringStage("booking_date"),
+      new ParseDateTimeStringStage("arrival_date"),
+      new ParseDateTimeStringStage("departure_date")
     )
 
     val df = Writer(DataFrameOps.emptyErrorDataset(spark), initDf)
-    val validRecords = bookingPipeline.foldLeft(df) { case (dfWithErrors, stage) =>
-      for {
-        df <- dfWithErrors
-        applied <- stage.apply(df)
-      } yield applied
+    val validRecords = bookingPipeline.foldLeft(df) {
+      case (dfWithErrors, stage) =>
+        for {
+          df <- dfWithErrors
+          applied <- stage.apply(df)
+        } yield applied
     }
 
     val (bookingErrors, bookingDf) = validRecords.run
@@ -92,7 +100,11 @@ object SimpleApp {
 
     val cancellationDf: DataFrame = runCancellationPipeline
 
-    val df = bookingDf.join(cancellationDf, usingColumns = Seq("booking_id"), joinType = "left")
+    val df = bookingDf.join(
+      cancellationDf,
+      usingColumns = Seq("booking_id"),
+      joinType = "left"
+    )
 
     println(bookingDf.count())
     println(df.count())

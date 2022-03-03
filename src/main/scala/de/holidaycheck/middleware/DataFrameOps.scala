@@ -5,12 +5,14 @@ import org.apache.spark.sql.{Dataset, SparkSession}
 
 object DataFrameOps {
 
-  val emptyErrorDataset: SparkSession => Dataset[DataError] = (spark: SparkSession) => {
-    import spark.implicits._
-    spark.emptyDataset[DataError]
-  }
+  val emptyErrorDataset: SparkSession => Dataset[DataError] =
+    (spark: SparkSession) => {
+      import spark.implicits._
 
-  implicit val dataFrameSemigroup: Semigroup[Dataset[DataError]] = (x: Dataset[DataError], y: Dataset[DataError]) => x.union(y)
+      spark.emptyDataset[DataError]
+    }
 
+  implicit val dataFrameSemigroup: Semigroup[Dataset[DataError]] =
+    (x: Dataset[DataError], y: Dataset[DataError]) => x.union(y)
 
 }
