@@ -22,7 +22,7 @@ class EntryPoint() {
         prefix = "-e,--extraction_date",
         description = "Date of Extraction yyyy/MM/dd"
       )
-      extraction_date: String
+      extraction_date: String = "2022/03/03"
   ): Unit = {
     // TODO validate parameters
     new Bookings(
@@ -45,7 +45,7 @@ class EntryPoint() {
         prefix = "-e,--extraction_date",
         description = "Date of Extraction yyyy/MM/dd"
       )
-      extraction_date: String
+      extraction_date: String = "2022/03/03"
   ): Unit = {
     // TODO validate parameters
     new Cancellation(
