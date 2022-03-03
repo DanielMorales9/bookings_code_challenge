@@ -1,13 +1,17 @@
 package de.holidaycheck.jobs
 
-import de.holidaycheck.middleware.DataFrameOps.buildPipeline
+import de.holidaycheck.middleware.DataFrameOps.{
+  buildPipeline,
+  emptyErrorDataset
+}
 import de.holidaycheck.transformations.{
   ParseDateTimeStringStage,
   ValidateAirportCodeStage,
   ValidateNotNullColumnStage
 }
 import de.holidaycheck.io.{DataLoader, DataSaver}
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import de.holidaycheck.middleware.DataError
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import org.apache.spark.sql.types.{
   LongType,
   StringType,
@@ -16,7 +20,7 @@ import org.apache.spark.sql.types.{
 }
 
 class Bookings(input_path: String, output_path: String, saveMode: String)
-    extends Job[DataFrame] {
+    extends Job[(Dataset[DataError], DataFrame)] {
 
   implicit val spark: SparkSession = init_spark_session("Bookings")
   implicit val rowKey: String = "booking_id"
@@ -31,15 +35,18 @@ class Bookings(input_path: String, output_path: String, saveMode: String)
     )
   )
 
-  def extract(): DataFrame = {
-    DataLoader.csv(
+  def extract(): (Dataset[DataError], DataFrame) = {
+    def initDf: DataFrame = DataLoader.csv(
       input_path,
       quote = "\"",
       schema = inputSchema
     )
+    (emptyErrorDataset(spark), initDf)
   }
 
-  def transform(df: DataFrame): DataFrame = {
+  def transform(
+      df: (Dataset[DataError], DataFrame)
+  ): (Dataset[DataError], DataFrame) = {
     val bookingPipeline = List(
       new ValidateNotNullColumnStage("booking_date"),
       new ValidateNotNullColumnStage("arrival_date"),
@@ -53,17 +60,14 @@ class Bookings(input_path: String, output_path: String, saveMode: String)
       new ParseDateTimeStringStage("departure_date")
     )
 
-    val (bookingErrors, bookingDf) =
-      buildPipeline(bookingPipeline, df).run
+    buildPipeline(bookingPipeline, df).run
 
-    bookingDf.show()
-    bookingDf.printSchema
-    bookingErrors.show()
-    bookingDf
   }
 
-  def load(df: DataFrame): Unit = {
-    DataSaver.csv(df, output_path, saveMode)
+  def load(df: (Dataset[DataError], DataFrame)): Unit = {
+    val (errors, data) = df
+    DataSaver.csv(data, f"$output_path/data", saveMode)
+    DataSaver.csv(errors, f"$output_path/errors", saveMode)
   }
 
 }

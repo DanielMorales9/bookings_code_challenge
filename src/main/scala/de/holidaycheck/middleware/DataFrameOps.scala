@@ -11,12 +11,12 @@ object DataFrameOps {
 
   def buildPipeline(
       pipeline: List[DataStage[DataFrame]],
-      initDf: DataFrame
+      initDF: (Dataset[DataError], DataFrame)
   )(implicit
       spark: SparkSession
   ): WriterT[Id, Dataset[DataError], DataFrame] = {
-
-    val df = Writer(emptyErrorDataset(spark), initDf)
+    val (errors, data) = initDF
+    val df = Writer(errors, data)
     pipeline.foldLeft(df) { case (dfWithErrors, stage) =>
       for {
         df <- dfWithErrors

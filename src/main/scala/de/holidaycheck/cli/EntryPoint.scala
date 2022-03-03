@@ -24,7 +24,7 @@ class EntryPoint() {
       //      )
       //      extraction_date: String,
   ): Unit = {
-    // TODO missing arguments validation
+    // TODO validate parameters
     new Bookings(input_path, output_path, mode.getOrElse("error")).run()
   }
 
@@ -42,7 +42,7 @@ class EntryPoint() {
       //      )
       //      extraction_date: String,
   ): Unit = {
-    // TODO missing arguments validation
+    // TODO validate parameters
     new Cancellation(input_path, output_path, mode.getOrElse("error")).run()
   }
 }

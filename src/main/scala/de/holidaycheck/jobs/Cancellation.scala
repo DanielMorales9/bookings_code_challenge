@@ -1,23 +1,21 @@
 package de.holidaycheck.jobs
 
-import de.holidaycheck.middleware.DataFrameOps.buildPipeline
+import de.holidaycheck.io.{DataLoader, DataSaver}
+import de.holidaycheck.middleware.DataError
+import de.holidaycheck.middleware.DataFrameOps.{
+  buildPipeline,
+  emptyErrorDataset
+}
 import de.holidaycheck.transformations.{
   ColumnRenamedStage,
   ParseDateTimeStringStage,
   ValidateNotNullColumnStage
 }
-import de.holidaycheck.io.{DataLoader, DataSaver}
-import org.apache.spark.sql.types.{
-  IntegerType,
-  LongType,
-  StringType,
-  StructField,
-  StructType
-}
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import org.apache.spark.sql.types._
 
 class Cancellation(input_path: String, output_path: String, saveMode: String)
-    extends Job[DataFrame] {
+    extends Job[(Dataset[DataError], DataFrame)] {
 
   implicit val spark: SparkSession = init_spark_session("Cancellations")
   implicit val rowKey: String = "booking_id"
@@ -30,15 +28,18 @@ class Cancellation(input_path: String, output_path: String, saveMode: String)
     )
   )
 
-  def extract(): DataFrame = {
-    DataLoader.csv(
+  def extract(): (Dataset[DataError], DataFrame) = {
+    val initDf = DataLoader.csv(
       input_path,
       quote = "\"",
       schema = inputSchema
     )
+    (emptyErrorDataset(spark), initDf)
   }
 
-  def transform(df: DataFrame): DataFrame = {
+  def transform(
+      df: (Dataset[DataError], DataFrame)
+  ): (Dataset[DataError], DataFrame) = {
     val cancellationPipeline = List(
       new ColumnRenamedStage("enddate", "end_date"),
       new ColumnRenamedStage("bookingid", "booking_id"),
@@ -47,15 +48,12 @@ class Cancellation(input_path: String, output_path: String, saveMode: String)
       new ParseDateTimeStringStage("end_date")
     )
 
-    val (cancellationErrors, cancellationDf) =
-      buildPipeline(cancellationPipeline, df).run
-
-    cancellationDf.show()
-    cancellationDf.printSchema
-    cancellationErrors.show()
-    cancellationDf
+    buildPipeline(cancellationPipeline, df).run
   }
 
-  def load(df: DataFrame): Unit =
-    DataSaver.csv(df, output_path, saveMode)
+  def load(df: (Dataset[DataError], DataFrame)): Unit = {
+    val (errors, data) = df
+    DataSaver.csv(data, f"$output_path/data", saveMode)
+    DataSaver.csv(errors, f"$output_path/errors", saveMode)
+  }
 }

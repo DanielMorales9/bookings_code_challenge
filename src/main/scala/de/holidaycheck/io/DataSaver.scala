@@ -1,20 +1,23 @@
 package de.holidaycheck.io
 
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.Dataset
 
 object DataSaver {
 
   def parquet(
-      df: DataFrame,
+      df: Dataset[_],
       path: String,
       saveMode: String = "error",
       partitionCols: List[String] = List()
   ): Unit = {
-    df.write.mode(saveMode).partitionBy(partitionCols: _*).parquet(path)
+    df.write
+      .mode(saveMode)
+      .partitionBy(partitionCols: _*)
+      .parquet(path)
   }
 
   def csv(
-      df: DataFrame,
+      df: Dataset[_],
       path: String,
       saveMode: String = "error",
       header: Boolean = true,
