@@ -20,9 +20,10 @@ class EntryPoint() {
       mode: Option[String] = None,
       @option(
         prefix = "-e,--extraction_date",
-        description = "Date of Extraction yyyy/MM/dd"
+        description = "Date of Extraction yyyy-MM-dd"
       )
-      extraction_date: String = "2022/03/03"
+      // test purpose
+      extraction_date: String = "2022-03-03"
   ): Unit = {
     // TODO validate parameters
     new Bookings(
@@ -43,9 +44,10 @@ class EntryPoint() {
       mode: Option[String] = None,
       @option(
         prefix = "-e,--extraction_date",
-        description = "Date of Extraction yyyy/MM/dd"
+        description = "Date of Extraction yyyy-MM-dd"
       )
-      extraction_date: String = "2022/03/03"
+      // test purpose
+      extraction_date: String = "2022-03-03"
   ): Unit = {
     // TODO validate parameters
     new Cancellation(
