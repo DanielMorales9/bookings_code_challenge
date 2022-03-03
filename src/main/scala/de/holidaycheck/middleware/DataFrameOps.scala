@@ -1,18 +1,10 @@
 package de.holidaycheck.middleware
 
-import cats.{Id, Semigroup}
 import cats.data.{Writer, WriterT}
-import de.holidaycheck.SimpleApp.spark
+import cats.{Id, Semigroup}
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 object DataFrameOps {
-
-  val emptyErrorDataset: SparkSession => Dataset[DataError] =
-    (spark: SparkSession) => {
-      import spark.implicits._
-
-      spark.emptyDataset[DataError]
-    }
 
   implicit val dataFrameSemigroup: Semigroup[Dataset[DataError]] =
     (x: Dataset[DataError], y: Dataset[DataError]) => x.union(y)
@@ -20,9 +12,11 @@ object DataFrameOps {
   def buildPipeline(
       pipeline: List[DataStage[DataFrame]],
       initDf: DataFrame
+  )(implicit
+      spark: SparkSession
   ): WriterT[Id, Dataset[DataError], DataFrame] = {
 
-    val df = Writer(DataFrameOps.emptyErrorDataset(spark), initDf)
+    val df = Writer(emptyErrorDataset(spark), initDf)
     pipeline.foldLeft(df) { case (dfWithErrors, stage) =>
       for {
         df <- dfWithErrors
@@ -31,4 +25,9 @@ object DataFrameOps {
     }
   }
 
+  def emptyErrorDataset(spark: SparkSession): Dataset[DataError] = {
+    import spark.implicits._
+
+    spark.emptyDataset[DataError]
+  }
 }
