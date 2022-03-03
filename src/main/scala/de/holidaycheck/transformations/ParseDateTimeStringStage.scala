@@ -1,4 +1,4 @@
-package de.holidaycheck.etl
+package de.holidaycheck.transformations
 
 import cats.data.Writer
 import de.holidaycheck.middleware.{DataError, DataStage}

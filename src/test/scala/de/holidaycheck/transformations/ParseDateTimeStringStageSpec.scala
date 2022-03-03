@@ -1,4 +1,4 @@
-package de.holidaycheck.etl
+package de.holidaycheck.transformations
 
 import com.github.mrpowers.spark.fast.tests.DataFrameComparer
 import de.holidaycheck.middleware.DataError

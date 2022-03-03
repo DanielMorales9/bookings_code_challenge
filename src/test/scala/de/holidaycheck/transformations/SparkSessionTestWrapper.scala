@@ -1,4 +1,4 @@
-package de.holidaycheck.etl
+package de.holidaycheck.transformations
 
 import org.apache.spark.sql.SparkSession
 

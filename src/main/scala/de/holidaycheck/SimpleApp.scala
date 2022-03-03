@@ -1,13 +1,13 @@
 package de.holidaycheck
 
-import de.holidaycheck.etl.{
+import de.holidaycheck.transformations.{
   ColumnRenamedStage,
-  DataLoader,
   ParseDateTimeStringStage,
   ValidateAirportCodeStage,
   ValidateNotNullColumnStage
 }
 import de.holidaycheck.middleware.DataFrameOps._
+import de.holidaycheck.utils.DataLoader
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
