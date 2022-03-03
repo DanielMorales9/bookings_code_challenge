@@ -32,15 +32,17 @@ class ParseDateTimeStringStageSpec
 
   test("format dateTimeString to Timestamp") {
 
+    val testedColumn = "dateTime"
     val dateTimeString = "2021-06-26 13:38:26.000"
     val brokenDateTime = "broken_datetime"
+    val rowKey = "id"
     val sourceDF = Seq(
       ("1", dateTimeString),
       ("2", brokenDateTime)
-    ).toDF("booking_id", "dateTime")
+    ).toDF(rowKey, testedColumn)
 
     val (actualErrors, actualDF) =
-      new ParseDateTimeStringStage("booking_id", "dateTime").apply(sourceDF).run
+      new ParseDateTimeStringStage(rowKey, testedColumn).apply(sourceDF).run
 
     val expectedData = Seq(
       Row("1", parseDateTime(dateTimeString))
@@ -50,8 +52,8 @@ class ParseDateTimeStringStageSpec
       spark.sparkContext.parallelize(expectedData),
       StructType(
         List(
-          StructField("booking_id", StringType, nullable = true),
-          StructField("dateTime", TimestampType, nullable = true)
+          StructField(rowKey, StringType, nullable = true),
+          StructField(testedColumn, TimestampType, nullable = true)
         )
       )
     )
@@ -62,7 +64,7 @@ class ParseDateTimeStringStageSpec
           DataError(
             "2",
             "ParseDateTimeStringStage",
-            "dateTime",
+            testedColumn,
             brokenDateTime,
             "Unable to parse DateTime string"
           )

@@ -6,29 +6,29 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.scalatest.funsuite.AnyFunSuite
 
-class ValidateNotNullColumnStageSpec
+class ValidateAirportCodeStageSpec
     extends AnyFunSuite
     with DataFrameComparer
     with SparkSessionTestWrapper {
 
   import spark.implicits._
 
-  test("validate null column") {
-
+  test("validate airport code") {
+    val testedColumn = "airport_code"
     val rowKey = "id"
-    val testedColumn = "test_col"
     val sourceDF = Seq(
-      ("1", "not_null"),
-      ("2", null)
+      ("1", "CGN"),
+      ("2", "1"),
+      ("3", "cgn")
     ).toDF(rowKey, testedColumn)
 
     val (actualErrors, actualDF) =
-      new ValidateNotNullColumnStage(rowKey, testedColumn)
+      new ValidateAirportCodeStage(rowKey, testedColumn)
         .apply(sourceDF)
         .run
 
     val expectedData = Seq(
-      Row("1", "not_null")
+      Row("1", "CGN")
     )
 
     val expectedDF = spark.createDataFrame(
@@ -46,13 +46,21 @@ class ValidateNotNullColumnStageSpec
         Seq(
           DataError(
             "2",
-            "ValidateNotNullColumnStage",
+            "ValidateAirportCodeStage",
             testedColumn,
-            "null",
-            "Column cannot be null"
+            "1",
+            "Invalid Airport Code: 1"
+          ),
+          DataError(
+            "3",
+            "ValidateAirportCodeStage",
+            testedColumn,
+            "cgn",
+            "Invalid Airport Code: cgn"
           )
         )
       )
+      .sort("rowKey")
 
     assertSmallDataFrameEquality(actualDF, expectedDF)
 

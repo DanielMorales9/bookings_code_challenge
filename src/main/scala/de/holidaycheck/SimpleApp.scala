@@ -4,6 +4,7 @@ import de.holidaycheck.etl.{
   ColumnRenamedStage,
   DataLoader,
   ParseDateTimeStringStage,
+  ValidateAirportCodeStage,
   ValidateNotNullColumnStage
 }
 import de.holidaycheck.middleware.DataFrameOps._
@@ -67,6 +68,8 @@ object SimpleApp {
       new ValidateNotNullColumnStage("booking_id", "departure_date"),
       new ValidateNotNullColumnStage("booking_id", "source"),
       new ValidateNotNullColumnStage("booking_id", "destination"),
+      new ValidateAirportCodeStage("booking_id", "source"),
+      new ValidateAirportCodeStage("booking_id", "destination"),
       new ParseDateTimeStringStage("booking_id", "booking_date"),
       new ParseDateTimeStringStage("booking_id", "arrival_date"),
       new ParseDateTimeStringStage("booking_id", "departure_date")
