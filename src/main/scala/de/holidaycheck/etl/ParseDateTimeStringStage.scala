@@ -18,7 +18,21 @@ class ParseDateTimeStringStage(columnName: String)(implicit spark: SparkSession)
 
     import spark.implicits._
 
-    val errors = data
+    val nullErrors = data
+      .filter(col(columnName).isNull)
+      .select("booking_id", columnName)
+      .map(row =>
+        DataError(
+          row(0).toString,
+          stage,
+          columnName,
+          "null",
+          "DateTime string is null"
+        )
+      )
+
+    val formattingErrors = data
+      .filter(col(columnName).isNotNull)
       .filter(to_timestamp(col(columnName)).isNull)
       .select("booking_id", columnName)
       .map(row => {
@@ -33,6 +47,8 @@ class ParseDateTimeStringStage(columnName: String)(implicit spark: SparkSession)
           "Unable to parse DateTime string"
         )
       })
+
+    val errors = nullErrors.union(formattingErrors)
 
     val validData = data
       .withColumn(columnName, to_timestamp(col(columnName)))

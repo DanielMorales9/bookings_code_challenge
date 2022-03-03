@@ -59,29 +59,30 @@ class ParseDateTimeStringStageSpec
       )
     )
 
-    val errorMessage = "Unable to parse DateTime string"
-    val expectedErrors = spark.createDataset(
-      Seq(
-        DataError(
-          "2",
-          "ParseDateTimeStringStage",
-          "dateTime",
-          brokenDateTime,
-          errorMessage
-        ),
-        DataError(
-          "3",
-          "ParseDateTimeStringStage",
-          "dateTime",
-          "null",
-          errorMessage
+    val expectedErrors = spark
+      .createDataset(
+        Seq(
+          DataError(
+            "2",
+            "ParseDateTimeStringStage",
+            "dateTime",
+            brokenDateTime,
+            "Unable to parse DateTime string"
+          ),
+          DataError(
+            "3",
+            "ParseDateTimeStringStage",
+            "dateTime",
+            "null",
+            "DateTime string is null"
+          )
         )
       )
-    )
+      .sort("rowKey")
 
     assertSmallDataFrameEquality(actualDF, expectedDF)
 
-    assertSmallDatasetEquality(actualErrors, expectedErrors)
+    assertSmallDatasetEquality(actualErrors.sort("rowKey"), expectedErrors)
 
   }
 
