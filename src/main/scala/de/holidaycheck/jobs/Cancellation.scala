@@ -7,15 +7,21 @@ import de.holidaycheck.middleware.DataFrameOps.{
   emptyErrorDataset
 }
 import de.holidaycheck.transformations.{
+  AddColumnStringStage,
   ColumnRenamedStage,
   ParseDateTimeStringStage,
   ValidateNotNullColumnStage
 }
+import org.apache.spark.sql.functions.lit
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import org.apache.spark.sql.types._
 
-class Cancellation(input_path: String, output_path: String, saveMode: String)
-    extends Job[(Dataset[DataError], DataFrame)] {
+class Cancellation(
+    input_path: String,
+    output_path: String,
+    saveMode: String,
+    extraction_date: String
+) extends Job[(Dataset[DataError], DataFrame)] {
 
   implicit val spark: SparkSession = init_spark_session("Cancellations")
   implicit val rowKey: String = "booking_id"
@@ -45,14 +51,25 @@ class Cancellation(input_path: String, output_path: String, saveMode: String)
       new ColumnRenamedStage("bookingid", "booking_id"),
       new ValidateNotNullColumnStage("end_date"),
       new ValidateNotNullColumnStage("cancellation_type"),
-      new ParseDateTimeStringStage("end_date")
+      new ParseDateTimeStringStage("end_date"),
+      new AddColumnStringStage("extraction_date", extraction_date)
     )
 
     buildPipeline(cancellationPipeline, df).run
   }
 
   def load(df: (Dataset[DataError], DataFrame)): Unit = {
-    DataSaver.csv(df._1, f"$output_path/errors", saveMode)
-    DataSaver.csv(df._2, f"$output_path/data", saveMode)
+    DataSaver.csv(
+      df._1.withColumn("extraction_date", lit(extraction_date)),
+      f"$output_path/errors",
+      saveMode,
+      partitionCols = List("extraction_date")
+    )
+    DataSaver.csv(
+      df._2,
+      f"$output_path/data",
+      saveMode,
+      partitionCols = List("extraction_date")
+    )
   }
 }

@@ -2,9 +2,10 @@ package de.holidaycheck.transformations
 
 import cats.data.Writer
 import de.holidaycheck.middleware.{DataFrameOps, DataStage}
+import org.apache.spark.sql.functions.lit
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-class ColumnRenamedStage(column: String, columnRenamed: String)(implicit
+class AddColumnStringStage(columnName: String, literal: String)(implicit
     spark: SparkSession
 ) extends DataStage[DataFrame] {
 
@@ -15,7 +16,7 @@ class ColumnRenamedStage(column: String, columnRenamed: String)(implicit
   def renameColumn(data: DataFrame): DataSetWithErrors[DataFrame] = {
     Writer(
       DataFrameOps.emptyErrorDataset(spark),
-      data.withColumnRenamed(column, columnRenamed)
+      data.withColumn(columnName, lit(literal))
     )
   }
 

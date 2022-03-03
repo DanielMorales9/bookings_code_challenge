@@ -5,12 +5,14 @@ import de.holidaycheck.middleware.DataFrameOps.{
   emptyErrorDataset
 }
 import de.holidaycheck.transformations.{
+  AddColumnStringStage,
   ParseDateTimeStringStage,
   ValidateAirportCodeStage,
   ValidateNotNullColumnStage
 }
 import de.holidaycheck.io.{DataLoader, DataSaver}
 import de.holidaycheck.middleware.DataError
+import org.apache.spark.sql.functions.lit
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import org.apache.spark.sql.types.{
   LongType,
@@ -19,8 +21,12 @@ import org.apache.spark.sql.types.{
   StructType
 }
 
-class Bookings(input_path: String, output_path: String, saveMode: String)
-    extends Job[(Dataset[DataError], DataFrame)] {
+class Bookings(
+    input_path: String,
+    output_path: String,
+    saveMode: String,
+    extraction_date: String
+) extends Job[(Dataset[DataError], DataFrame)] {
 
   implicit val spark: SparkSession = init_spark_session("Bookings")
   implicit val rowKey: String = "booking_id"
@@ -57,7 +63,8 @@ class Bookings(input_path: String, output_path: String, saveMode: String)
       new ValidateAirportCodeStage("destination"),
       new ParseDateTimeStringStage("booking_date"),
       new ParseDateTimeStringStage("arrival_date"),
-      new ParseDateTimeStringStage("departure_date")
+      new ParseDateTimeStringStage("departure_date"),
+      new AddColumnStringStage("extraction_date", extraction_date)
     )
 
     buildPipeline(bookingPipeline, df).run
@@ -65,8 +72,18 @@ class Bookings(input_path: String, output_path: String, saveMode: String)
   }
 
   def load(df: (Dataset[DataError], DataFrame)): Unit = {
-    DataSaver.csv(df._1, f"$output_path/errors", saveMode)
-    DataSaver.csv(df._2, f"$output_path/data", saveMode)
+    DataSaver.csv(
+      df._1.withColumn("extraction_date", lit(extraction_date)),
+      f"$output_path/errors",
+      saveMode,
+      partitionCols = List("extraction_date")
+    )
+    DataSaver.csv(
+      df._2,
+      f"$output_path/data",
+      saveMode,
+      partitionCols = List("extraction_date")
+    )
   }
 
 }

@@ -17,15 +17,20 @@ class EntryPoint() {
       @option(prefix = "-o,--output", description = "Output Path")
       output_path: String,
       @option(prefix = "-m,--mode", description = "Mode")
-      mode: Option[String] = None
-      //      @option(
-      //        prefix = "-e, --extraction_date",
-      //        description = "Date of Extraction"
-      //      )
-      //      extraction_date: String,
+      mode: Option[String] = None,
+      @option(
+        prefix = "-e,--extraction_date",
+        description = "Date of Extraction yyyy/MM/dd"
+      )
+      extraction_date: String
   ): Unit = {
     // TODO validate parameters
-    new Bookings(input_path, output_path, mode.getOrElse("error")).run()
+    new Bookings(
+      input_path,
+      output_path,
+      mode.getOrElse("error"),
+      extraction_date
+    ).run()
   }
 
   @command(description = "Cleansing Cancellation Data")
@@ -35,14 +40,19 @@ class EntryPoint() {
       @option(prefix = "-o,--output", description = "Output Path")
       output_path: String,
       @option(prefix = "-m,--mode", description = "Mode")
-      mode: Option[String] = None
-      //      @option(
-      //        prefix = "-e, --extraction_date",
-      //        description = "Date of Extraction"
-      //      )
-      //      extraction_date: String,
+      mode: Option[String] = None,
+      @option(
+        prefix = "-e,--extraction_date",
+        description = "Date of Extraction yyyy/MM/dd"
+      )
+      extraction_date: String
   ): Unit = {
     // TODO validate parameters
-    new Cancellation(input_path, output_path, mode.getOrElse("error")).run()
+    new Cancellation(
+      input_path,
+      output_path,
+      mode.getOrElse("error"),
+      extraction_date
+    ).run()
   }
 }
