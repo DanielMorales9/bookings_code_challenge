@@ -35,11 +35,9 @@ class ParseDateTimeStringStageSpec
 
     val dateTimeString = "2021-06-26 13:38:26.000"
     val brokenDateTime = "broken_datetime"
-    val nullDateTime = null
     val sourceDF = Seq(
       ("1", dateTimeString),
-      ("2", brokenDateTime),
-      ("3", nullDateTime)
+      ("2", brokenDateTime)
     ).toDF("booking_id", "dateTime")
 
     val (actualErrors, actualDF) =
@@ -68,21 +66,13 @@ class ParseDateTimeStringStageSpec
             "dateTime",
             brokenDateTime,
             "Unable to parse DateTime string"
-          ),
-          DataError(
-            "3",
-            "ParseDateTimeStringStage",
-            "dateTime",
-            "null",
-            "DateTime string is null"
           )
         )
       )
-      .sort("rowKey")
 
     assertSmallDataFrameEquality(actualDF, expectedDF)
 
-    assertSmallDatasetEquality(actualErrors.sort("rowKey"), expectedErrors)
+    assertSmallDatasetEquality(actualErrors, expectedErrors)
 
   }
 

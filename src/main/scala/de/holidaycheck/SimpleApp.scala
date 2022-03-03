@@ -4,7 +4,8 @@ import cats.data.Writer
 import de.holidaycheck.etl.{
   ColumnRenamedStage,
   DataLoader,
-  ParseDateTimeStringStage
+  ParseDateTimeStringStage,
+  ValidateNotNullColumnStage
 }
 import de.holidaycheck.middleware.DataFrameOps
 import de.holidaycheck.middleware.DataFrameOps._
@@ -31,6 +32,8 @@ object SimpleApp {
     val cancellationPipeline = List(
       new ColumnRenamedStage("enddate", "end_date"),
       new ColumnRenamedStage("bookingid", "booking_id"),
+      new ValidateNotNullColumnStage("end_date"),
+      new ValidateNotNullColumnStage("cancellation_type"),
       new ParseDateTimeStringStage("end_date")
     )
 
@@ -62,6 +65,11 @@ object SimpleApp {
       .csv(quote = Some("\""), schema = Some(bookingSchema))
 
     val bookingPipeline = List(
+      new ValidateNotNullColumnStage("booking_date"),
+      new ValidateNotNullColumnStage("arrival_date"),
+      new ValidateNotNullColumnStage("departure_date"),
+      new ValidateNotNullColumnStage("source"),
+      new ValidateNotNullColumnStage("destination"),
       new ParseDateTimeStringStage("booking_date"),
       new ParseDateTimeStringStage("arrival_date"),
       new ParseDateTimeStringStage("departure_date")
