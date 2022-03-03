@@ -1,7 +1,6 @@
-package de.holidaycheck
+package de.holidaycheck.etl
 
 import com.github.mrpowers.spark.fast.tests.DataFrameComparer
-import de.holidaycheck.etl.ValidateNotNullColumnStage
 import de.holidaycheck.middleware.DataError
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
