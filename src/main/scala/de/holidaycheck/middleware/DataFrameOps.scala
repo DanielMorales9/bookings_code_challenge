@@ -1,7 +1,8 @@
 package de.holidaycheck.middleware
 
-import cats.Semigroup
-import org.apache.spark.sql.{Dataset, SparkSession}
+import cats.{Id, Semigroup}
+import cats.data.WriterT
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 object DataFrameOps {
 
@@ -14,5 +15,17 @@ object DataFrameOps {
 
   implicit val dataFrameSemigroup: Semigroup[Dataset[DataError]] =
     (x: Dataset[DataError], y: Dataset[DataError]) => x.union(y)
+
+  def buildPipeline(
+      pipeline: List[DataStage[DataFrame]],
+      df: WriterT[Id, Dataset[DataError], DataFrame]
+  ): WriterT[Id, Dataset[DataError], DataFrame] = {
+    pipeline.foldLeft(df) { case (dfWithErrors, stage) =>
+      for {
+        df <- dfWithErrors
+        applied <- stage.apply(df)
+      } yield applied
+    }
+  }
 
 }

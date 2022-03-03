@@ -7,9 +7,9 @@ import de.holidaycheck.etl.{
   ParseDateTimeStringStage
 }
 import de.holidaycheck.middleware.DataFrameOps
+import de.holidaycheck.middleware.DataFrameOps._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, SparkSession}
-import DataFrameOps._
 
 object SimpleApp {
   implicit val spark: SparkSession = init_spark_session
@@ -28,22 +28,15 @@ object SimpleApp {
     val initDf = new DataLoader(cancellationSource)
       .csv(quote = Some("\""), schema = Some(cancellationSchema))
 
-    val pipeline = List(
+    val cancellationPipeline = List(
       new ColumnRenamedStage("enddate", "end_date"),
       new ColumnRenamedStage("bookingid", "booking_id"),
       new ParseDateTimeStringStage("end_date")
     )
 
-    val df = Writer(DataFrameOps.emptyErrorDataset(spark), initDf)
-
-    val validRecords = pipeline.foldLeft(df) { case (dfWithErrors, stage) =>
-      for {
-        df <- dfWithErrors
-        applied <- stage.apply(df)
-      } yield applied
-    }
-
-    val (cancellationErrors, cancellationDf) = validRecords.run
+    val dfWithErrors = Writer(DataFrameOps.emptyErrorDataset(spark), initDf)
+    val (cancellationErrors, cancellationDf) =
+      buildPipeline(cancellationPipeline, dfWithErrors).run
 
     cancellationDf.show()
     cancellationDf.printSchema
@@ -74,16 +67,9 @@ object SimpleApp {
       new ParseDateTimeStringStage("departure_date")
     )
 
-    val df = Writer(DataFrameOps.emptyErrorDataset(spark), initDf)
-    val validRecords = bookingPipeline.foldLeft(df) {
-      case (dfWithErrors, stage) =>
-        for {
-          df <- dfWithErrors
-          applied <- stage.apply(df)
-        } yield applied
-    }
-
-    val (bookingErrors, bookingDf) = validRecords.run
+    val dfWithErrors = Writer(DataFrameOps.emptyErrorDataset(spark), initDf)
+    val (bookingErrors, bookingDf) =
+      buildPipeline(bookingPipeline, dfWithErrors).run
 
     bookingDf.show()
     bookingDf.printSchema

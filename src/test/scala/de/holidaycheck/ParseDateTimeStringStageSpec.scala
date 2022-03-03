@@ -15,12 +15,21 @@ import org.scalatest.funsuite.AnyFunSuite
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
 
-class DateTimeFormatStageSpec
+class ParseDateTimeStringStageSpec
     extends AnyFunSuite
     with DataFrameComparer
     with SparkSessionTestWrapper {
 
   import spark.implicits._
+
+  private def parseDateTime(
+      dateTimeString: String,
+      dateTimeFormat: String = "yyyy-MM-dd hh:mm:ss.SSS"
+  ): Timestamp = {
+    val dateFormat = new SimpleDateFormat(dateTimeFormat)
+    val parsedDate = dateFormat.parse(dateTimeString)
+    new Timestamp(parsedDate.getTime)
+  }
 
   test("format dateTimeString to Timestamp") {
 
@@ -76,12 +85,4 @@ class DateTimeFormatStageSpec
 
   }
 
-  private def parseDateTime(
-      dateTimeString: String,
-      dateTimeFormat: String = "yyyy-MM-dd hh:mm:ss.SSS"
-  ): Timestamp = {
-    val dateFormat = new SimpleDateFormat(dateTimeFormat)
-    val parsedDate = dateFormat.parse(dateTimeString)
-    new Timestamp(parsedDate.getTime)
-  }
 }
