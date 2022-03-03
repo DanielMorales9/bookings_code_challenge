@@ -1,6 +1,6 @@
 package de.holidaycheck.jobs
 
-import de.holidaycheck.io.{DataLoader, DataSaver}
+import de.holidaycheck.io.{Loader, Saver}
 import de.holidaycheck.middleware.DataError
 import de.holidaycheck.middleware.DataFrameOps.{
   buildPipeline,
@@ -35,7 +35,7 @@ class Cancellation(
   )
 
   def extract(): (Dataset[DataError], DataFrame) = {
-    val initDf = DataLoader.csv(
+    val initDf = Loader.csv(
       input_path,
       quote = "\"",
       schema = inputSchema
@@ -59,13 +59,13 @@ class Cancellation(
   }
 
   def load(df: (Dataset[DataError], DataFrame)): Unit = {
-    DataSaver.csv(
+    Saver.csv(
       df._1.withColumn("extraction_date", lit(extraction_date)),
       f"$output_path/errors",
       saveMode,
       partitionCols = List("extraction_date")
     )
-    DataSaver.csv(
+    Saver.csv(
       df._2,
       f"$output_path/data",
       saveMode,

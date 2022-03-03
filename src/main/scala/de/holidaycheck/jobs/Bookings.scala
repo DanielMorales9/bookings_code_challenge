@@ -10,7 +10,7 @@ import de.holidaycheck.transformations.{
   ValidateAirportCodeStage,
   ValidateNotNullColumnStage
 }
-import de.holidaycheck.io.{DataLoader, DataSaver}
+import de.holidaycheck.io.{Loader, Saver}
 import de.holidaycheck.middleware.DataError
 import org.apache.spark.sql.functions.lit
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
@@ -42,7 +42,7 @@ class Bookings(
   )
 
   def extract(): (Dataset[DataError], DataFrame) = {
-    def initDf: DataFrame = DataLoader.csv(
+    def initDf: DataFrame = Loader.csv(
       input_path,
       quote = "\"",
       schema = inputSchema
@@ -72,13 +72,13 @@ class Bookings(
   }
 
   def load(df: (Dataset[DataError], DataFrame)): Unit = {
-    DataSaver.csv(
+    Saver.csv(
       df._1.withColumn("extraction_date", lit(extraction_date)),
       f"$output_path/errors",
       saveMode,
       partitionCols = List("extraction_date")
     )
-    DataSaver.csv(
+    Saver.csv(
       df._2,
       f"$output_path/data",
       saveMode,

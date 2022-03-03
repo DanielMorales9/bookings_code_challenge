@@ -2,7 +2,7 @@ package de.holidaycheck.io
 
 import org.apache.spark.sql.Dataset
 
-object DataSaver {
+object Saver {
 
   def parquet(
       df: Dataset[_],

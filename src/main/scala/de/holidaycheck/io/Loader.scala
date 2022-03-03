@@ -3,7 +3,7 @@ package de.holidaycheck.io
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-object DataLoader {
+object Loader {
 
   def csv(
       filePath: String,
