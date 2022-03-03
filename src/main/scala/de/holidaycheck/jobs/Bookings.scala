@@ -65,9 +65,8 @@ class Bookings(input_path: String, output_path: String, saveMode: String)
   }
 
   def load(df: (Dataset[DataError], DataFrame)): Unit = {
-    val (errors, data) = df
-    DataSaver.csv(data, f"$output_path/data", saveMode)
-    DataSaver.csv(errors, f"$output_path/errors", saveMode)
+    DataSaver.csv(df._1, f"$output_path/errors", saveMode)
+    DataSaver.csv(df._2, f"$output_path/data", saveMode)
   }
 
 }
