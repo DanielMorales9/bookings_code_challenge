@@ -1,7 +1,8 @@
 package de.holidaycheck.middleware
 
 import cats.{Id, Semigroup}
-import cats.data.WriterT
+import cats.data.{Writer, WriterT}
+import de.holidaycheck.SimpleApp.spark
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 object DataFrameOps {
@@ -18,8 +19,10 @@ object DataFrameOps {
 
   def buildPipeline(
       pipeline: List[DataStage[DataFrame]],
-      df: WriterT[Id, Dataset[DataError], DataFrame]
+      initDf: DataFrame
   ): WriterT[Id, Dataset[DataError], DataFrame] = {
+
+    val df = Writer(DataFrameOps.emptyErrorDataset(spark), initDf)
     pipeline.foldLeft(df) { case (dfWithErrors, stage) =>
       for {
         df <- dfWithErrors

@@ -1,13 +1,11 @@
 package de.holidaycheck
 
-import cats.data.Writer
 import de.holidaycheck.etl.{
   ColumnRenamedStage,
   DataLoader,
   ParseDateTimeStringStage,
   ValidateNotNullColumnStage
 }
-import de.holidaycheck.middleware.DataFrameOps
 import de.holidaycheck.middleware.DataFrameOps._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -37,9 +35,8 @@ object SimpleApp {
       new ParseDateTimeStringStage("end_date")
     )
 
-    val dfWithErrors = Writer(DataFrameOps.emptyErrorDataset(spark), initDf)
     val (cancellationErrors, cancellationDf) =
-      buildPipeline(cancellationPipeline, dfWithErrors).run
+      buildPipeline(cancellationPipeline, initDf).run
 
     cancellationDf.show()
     cancellationDf.printSchema
@@ -75,9 +72,8 @@ object SimpleApp {
       new ParseDateTimeStringStage("departure_date")
     )
 
-    val dfWithErrors = Writer(DataFrameOps.emptyErrorDataset(spark), initDf)
     val (bookingErrors, bookingDf) =
-      buildPipeline(bookingPipeline, dfWithErrors).run
+      buildPipeline(bookingPipeline, initDf).run
 
     bookingDf.show()
     bookingDf.printSchema
