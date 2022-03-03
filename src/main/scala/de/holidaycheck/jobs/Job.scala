@@ -1,8 +1,8 @@
 package de.holidaycheck.jobs
 
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.SparkSession
 
-abstract class Job {
+abstract class Job[T] {
 
   implicit val spark: SparkSession
 
@@ -10,18 +10,17 @@ abstract class Job {
     SparkSession.builder.appName(appName).getOrCreate()
   }
 
-  def extract(): DataFrame
+  def extract(): T
 
-  def transform(df: DataFrame): DataFrame
+  def transform(df: T): T
 
-  def load(df: DataFrame): DataFrame
+  def load(df: T): Unit
 
-  def run(): DataFrame = {
+  def run(): Unit = {
     val df = extract()
     val transformedDF = transform(df)
-    val finalDF = load(transformedDF)
+    load(transformedDF)
     spark.close()
-    finalDF
   }
 
 }

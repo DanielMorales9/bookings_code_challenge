@@ -6,7 +6,7 @@ import de.holidaycheck.transformations.{
   ParseDateTimeStringStage,
   ValidateNotNullColumnStage
 }
-import de.holidaycheck.io.DataLoader
+import de.holidaycheck.io.{DataLoader, DataSaver}
 import org.apache.spark.sql.types.{
   IntegerType,
   LongType,
@@ -16,7 +16,8 @@ import org.apache.spark.sql.types.{
 }
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-class Cancellation(input_path: String) extends Job {
+class Cancellation(input_path: String, output_path: String, saveMode: String)
+    extends Job[DataFrame] {
 
   implicit val spark: SparkSession = init_spark_session("Cancellations")
   implicit val rowKey: String = "booking_id"
@@ -30,9 +31,11 @@ class Cancellation(input_path: String) extends Job {
   )
 
   def extract(): DataFrame = {
-
-    new DataLoader(input_path)
-      .csv(quote = Some("\""), schema = Some(inputSchema))
+    DataLoader.csv(
+      input_path,
+      quote = "\"",
+      schema = inputSchema
+    )
   }
 
   def transform(df: DataFrame): DataFrame = {
@@ -53,5 +56,6 @@ class Cancellation(input_path: String) extends Job {
     cancellationDf
   }
 
-  def load(df: DataFrame): DataFrame = df
+  def load(df: DataFrame): Unit =
+    DataSaver.csv(df, output_path, saveMode)
 }
