@@ -1,39 +1,64 @@
 package experiment
 
+import cats.data.Writer
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, SparkSession}
+import DataFrameOps._
 
 object SimpleApp {
-  val bookingFile = "bookings.csv"
-  val cancellationFile = "cancellation.csv"
-
-  val cancellationSchema = new StructType(
-    Array(
-      StructField("bookingid", LongType, nullable = false),
-      StructField("cancellation_type", IntegerType, nullable = false),
-      StructField("enddate", StringType, nullable = false)
-    )
-  )
-
-  val bookingSchema = new StructType(
-    Array(
-      StructField("booking_id", LongType, nullable = false),
-      StructField("booking_date", StringType, nullable = false),
-      StructField("arrival_date", StringType, nullable = false),
-      StructField("departure_date", StringType, nullable = false),
-      StructField("source", StringType, nullable = false),
-      StructField("destination", StringType, nullable = false))
-  )
-
   implicit val spark: SparkSession = init_spark_session
 
-  private def init_spark_session: SparkSession = {
-    SparkSession.builder.appName("Bookings").getOrCreate()
+  private def runCancellationPipeline: DataFrame = {
+    val cancellationSource = "cancellation.csv"
+
+    val cancellationSchema = new StructType(
+      Array(
+        StructField("bookingid", LongType, nullable = false),
+        StructField("cancellation_type", IntegerType, nullable = false),
+        StructField("enddate", StringType, nullable = false)
+      )
+    )
+
+    val initDf = new DataLoader(cancellationSource).csv(quote = Some("\""), schema = Some(cancellationSchema))
+
+
+    val pipeline = List(
+      new ColumnRenamedStage("enddate", "end_date"),
+      new ColumnRenamedStage("bookingid", "booking_id"),
+      new DateTimeFormatStage("end_date")
+    )
+
+    val df = Writer(DataFrameOps.emptyErrorDataset(spark), initDf)
+
+    val validRecords = pipeline.foldLeft(df) { case (dfWithErrors, stage) =>
+      for {
+        df <- dfWithErrors
+        applied <- stage.apply(df)
+      } yield applied
+    }
+
+    val (cancellationErrors, cancellationDf) = validRecords.run
+
+    cancellationDf.show()
+    cancellationDf.printSchema
+    cancellationErrors.show()
+    cancellationDf
   }
 
-  def main(args: Array[String]): Unit = {
+  private def runBookingPipeline: DataFrame = {
+    val bookingSource = "bookings.csv"
 
-    val initDf = new DataLoader(bookingFile).csv(quote = Some("\""), schema = Some(bookingSchema))
+    val bookingSchema = new StructType(
+      Array(
+        StructField("booking_id", LongType, nullable = false),
+        StructField("booking_date", StringType, nullable = false),
+        StructField("arrival_date", StringType, nullable = false),
+        StructField("departure_date", StringType, nullable = false),
+        StructField("source", StringType, nullable = false),
+        StructField("destination", StringType, nullable = false))
+    )
+
+    val initDf = new DataLoader(bookingSource).csv(quote = Some("\""), schema = Some(bookingSchema))
 
     val bookingPipeline = List(
       new DateTimeFormatStage("booking_date"),
@@ -41,23 +66,30 @@ object SimpleApp {
       new DateTimeFormatStage("departure_date"),
     )
 
-    val bookingDf = runPipeline(initDf, bookingPipeline)
+    val df = Writer(DataFrameOps.emptyErrorDataset(spark), initDf)
+    val validRecords = bookingPipeline.foldLeft(df) { case (dfWithErrors, stage) =>
+      for {
+        df <- dfWithErrors
+        applied <- stage.apply(df)
+      } yield applied
+    }
+
+    val (bookingErrors, bookingDf) = validRecords.run
 
     bookingDf.show()
     bookingDf.printSchema
+    bookingErrors.show()
+    bookingDf
+  }
 
-    var cancellationDf = new DataLoader(cancellationFile).csv(quote = Some("\""), schema = Some(cancellationSchema))
+  private def init_spark_session: SparkSession = {
+    SparkSession.builder.appName("code_challenge").getOrCreate()
+  }
 
-    val cancellationPipeline = List(
-      new ColumnRenamedStage("enddate", "end_date"),
-      new ColumnRenamedStage("bookingid", "booking_id"),
-      new DateTimeFormatStage("end_date")
-    )
+  def main(args: Array[String]): Unit = {
+    val bookingDf: DataFrame = runBookingPipeline
 
-    cancellationDf = runPipeline(cancellationDf, cancellationPipeline)
-
-    cancellationDf.show()
-    cancellationDf.printSchema
+    val cancellationDf: DataFrame = runCancellationPipeline
 
     val df = bookingDf.join(cancellationDf, usingColumns = Seq("booking_id"), joinType = "left")
 
@@ -68,11 +100,5 @@ object SimpleApp {
     df.printSchema
 
     spark.stop()
-  }
-
-  private def runPipeline(initDf: DataFrame, pipeline: List[DataStage[DataFrame]]): DataFrame = {
-    pipeline.foldLeft(initDf) {
-      case (df, stage) => stage(df)
-    }
   }
 }

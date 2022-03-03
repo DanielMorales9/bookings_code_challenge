@@ -1,10 +1,12 @@
 package experiment
 
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.Dataset
+import scala.language.higherKinds
+import cats.data.Writer
+trait DataStage[T <: Dataset[_]] extends Serializable {
+  type DataSetWithErrors[A] = Writer[Dataset[DataError], A]
 
-trait DataStage[T] extends Serializable {
-
-  def apply(dataRecords: T): DataFrame
+  def apply(dataRecords: T): DataSetWithErrors[T]
 
   def stage: String
 }
