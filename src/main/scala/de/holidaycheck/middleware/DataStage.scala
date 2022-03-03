@@ -1,8 +1,8 @@
-package experiment
+package de.holidaycheck.middleware
 
-import org.apache.spark.sql.Dataset
-import scala.language.higherKinds
 import cats.data.Writer
+import org.apache.spark.sql.Dataset
+
 trait DataStage[T <: Dataset[_]] extends Serializable {
   type DataSetWithErrors[A] = Writer[Dataset[DataError], A]
 

@@ -1,6 +1,8 @@
-package experiment
+package de.holidaycheck
 
 import cats.data.Writer
+import de.holidaycheck.etl.{ColumnRenamedStage, DataLoader, DateTimeFormatStage}
+import de.holidaycheck.middleware.DataFrameOps
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import DataFrameOps._
@@ -20,7 +22,6 @@ object SimpleApp {
     )
 
     val initDf = new DataLoader(cancellationSource).csv(quote = Some("\""), schema = Some(cancellationSchema))
-
 
     val pipeline = List(
       new ColumnRenamedStage("enddate", "end_date"),

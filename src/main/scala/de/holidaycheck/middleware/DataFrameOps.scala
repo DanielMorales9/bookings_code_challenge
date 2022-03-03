@@ -1,12 +1,12 @@
-package experiment
+package de.holidaycheck.middleware
 
 import cats.Semigroup
-import experiment.SimpleApp.spark
 import org.apache.spark.sql.{Dataset, SparkSession}
-import spark.implicits._
+
 object DataFrameOps {
 
-  val emptyErrorDataset: SparkSession => Dataset[DataError] = (spark:SparkSession) => {
+  val emptyErrorDataset: SparkSession => Dataset[DataError] = (spark: SparkSession) => {
+    import spark.implicits._
     spark.emptyDataset[DataError]
   }
 

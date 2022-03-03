@@ -1,6 +1,7 @@
-package experiment
+package de.holidaycheck.etl
 
 import cats.data.Writer
+import de.holidaycheck.middleware.{DataFrameOps, DataStage}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 class ColumnRenamedStage(column: String, columnRenamed: String)(implicit spark: SparkSession) extends DataStage[DataFrame] {
