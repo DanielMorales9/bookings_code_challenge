@@ -5,7 +5,7 @@ import de.holidaycheck.middleware.{DataError, DataStage}
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-class ValidateNotNullColumnStage(columnName: String)(implicit
+class ValidateNotNullColumnStage(rowKey: String, columnName: String)(implicit
     spark: SparkSession
 ) extends DataStage[DataFrame] {
 
@@ -20,7 +20,7 @@ class ValidateNotNullColumnStage(columnName: String)(implicit
 
     val errors = data
       .filter(col(columnName).isNull)
-      .select("booking_id", columnName)
+      .select(rowKey, columnName)
       .map(row =>
         DataError(
           row(0).toString,

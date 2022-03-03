@@ -3,10 +3,11 @@ package de.holidaycheck.etl
 import cats.data.Writer
 import de.holidaycheck.middleware.{DataError, DataStage}
 import org.apache.spark.sql.functions.{col, to_timestamp}
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
-class ParseDateTimeStringStage(columnName: String)(implicit spark: SparkSession)
-    extends DataStage[DataFrame] {
+class ParseDateTimeStringStage(rowKey: String, columnName: String)(implicit
+    spark: SparkSession
+) extends DataStage[DataFrame] {
 
   override val stage: String = getClass.getSimpleName
 
@@ -20,7 +21,7 @@ class ParseDateTimeStringStage(columnName: String)(implicit spark: SparkSession)
 
     val errors = data
       .filter(to_timestamp(col(columnName)).isNull)
-      .select("booking_id", columnName)
+      .select(rowKey, columnName)
       .map(row => {
         var dateTimeColumn = row(1)
         if (dateTimeColumn == null) dateTimeColumn = "null"

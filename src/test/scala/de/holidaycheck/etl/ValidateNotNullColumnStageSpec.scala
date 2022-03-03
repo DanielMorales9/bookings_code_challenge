@@ -21,7 +21,9 @@ class ValidateNotNullColumnStageSpec
     ).toDF("booking_id", "test_col")
 
     val (actualErrors, actualDF) =
-      new ValidateNotNullColumnStage("test_col").apply(sourceDF).run
+      new ValidateNotNullColumnStage("booking_id", "test_col")
+        .apply(sourceDF)
+        .run
 
     val expectedData = Seq(
       Row("1", "not_null")

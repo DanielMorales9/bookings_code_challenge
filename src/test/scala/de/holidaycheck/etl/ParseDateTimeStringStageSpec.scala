@@ -40,7 +40,7 @@ class ParseDateTimeStringStageSpec
     ).toDF("booking_id", "dateTime")
 
     val (actualErrors, actualDF) =
-      new ParseDateTimeStringStage("dateTime").apply(sourceDF).run
+      new ParseDateTimeStringStage("booking_id", "dateTime").apply(sourceDF).run
 
     val expectedData = Seq(
       Row("1", parseDateTime(dateTimeString))

@@ -18,9 +18,9 @@ object SimpleApp {
 
     val cancellationSchema = new StructType(
       Array(
-        StructField("bookingid", LongType, nullable = false),
-        StructField("cancellation_type", IntegerType, nullable = false),
-        StructField("enddate", StringType, nullable = false)
+        StructField("bookingid", LongType),
+        StructField("cancellation_type", IntegerType),
+        StructField("enddate", StringType)
       )
     )
 
@@ -30,9 +30,9 @@ object SimpleApp {
     val cancellationPipeline = List(
       new ColumnRenamedStage("enddate", "end_date"),
       new ColumnRenamedStage("bookingid", "booking_id"),
-      new ValidateNotNullColumnStage("end_date"),
-      new ValidateNotNullColumnStage("cancellation_type"),
-      new ParseDateTimeStringStage("end_date")
+      new ValidateNotNullColumnStage("booking_id", "end_date"),
+      new ValidateNotNullColumnStage("booking_id", "cancellation_type"),
+      new ParseDateTimeStringStage("booking_id", "end_date")
     )
 
     val (cancellationErrors, cancellationDf) =
@@ -62,14 +62,14 @@ object SimpleApp {
       .csv(quote = Some("\""), schema = Some(bookingSchema))
 
     val bookingPipeline = List(
-      new ValidateNotNullColumnStage("booking_date"),
-      new ValidateNotNullColumnStage("arrival_date"),
-      new ValidateNotNullColumnStage("departure_date"),
-      new ValidateNotNullColumnStage("source"),
-      new ValidateNotNullColumnStage("destination"),
-      new ParseDateTimeStringStage("booking_date"),
-      new ParseDateTimeStringStage("arrival_date"),
-      new ParseDateTimeStringStage("departure_date")
+      new ValidateNotNullColumnStage("booking_id", "booking_date"),
+      new ValidateNotNullColumnStage("booking_id", "arrival_date"),
+      new ValidateNotNullColumnStage("booking_id", "departure_date"),
+      new ValidateNotNullColumnStage("booking_id", "source"),
+      new ValidateNotNullColumnStage("booking_id", "destination"),
+      new ParseDateTimeStringStage("booking_id", "booking_date"),
+      new ParseDateTimeStringStage("booking_id", "arrival_date"),
+      new ParseDateTimeStringStage("booking_id", "departure_date")
     )
 
     val (bookingErrors, bookingDf) =
