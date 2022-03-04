@@ -1,9 +1,29 @@
 package de.holidaycheck.cli
 
+import de.holidaycheck.cli.Validator.{
+  validateDateString,
+  validatePath,
+  validateSaveMode
+}
 import de.holidaycheck.jobs.{Bookings, Cancellation}
 import wvlet.airframe.launcher.{command, option}
 
+import scala.util.{Failure, Success, Try}
+
 class EntryPoint() {
+
+  def validateSimpleJobArguments(
+      input_path: String,
+      output_path: String,
+      mode: String,
+      extraction_date: String
+  ): Try[(String, String, String, String)] = {
+    for {
+      inputPath <- validatePath(input_path)
+      extractionDate <- validateDateString(extraction_date)
+      mode <- validateSaveMode(mode)
+    } yield (inputPath, output_path, mode, extractionDate)
+  }
 
   @command(isDefault = true)
   def default(): Unit = {
@@ -17,21 +37,28 @@ class EntryPoint() {
       @option(prefix = "-o,--output", description = "Output Path")
       output_path: String,
       @option(prefix = "-m,--mode", description = "Mode")
-      mode: Option[String] = None,
+      mode: String = "error",
       @option(
         prefix = "-e,--extraction_date",
         description = "Date of Extraction yyyy-MM-dd"
       )
-      // test purpose
-      extraction_date: String = "2022-03-03"
+      extraction_date: String
   ): Unit = {
-    // TODO validate parameters
-    new Bookings(
+    validateSimpleJobArguments(
       input_path,
       output_path,
-      mode.getOrElse("error"),
+      mode,
       extraction_date
-    ).run()
+    ) match {
+      case Success(args) =>
+        new Bookings(
+          args._1,
+          args._2,
+          args._3,
+          args._4
+        ).run()
+      case Failure(e) => throw e
+    }
   }
 
   @command(description = "Cleansing Cancellation Data")
@@ -41,20 +68,27 @@ class EntryPoint() {
       @option(prefix = "-o,--output", description = "Output Path")
       output_path: String,
       @option(prefix = "-m,--mode", description = "Mode")
-      mode: Option[String] = None,
+      mode: String = "error",
       @option(
         prefix = "-e,--extraction_date",
         description = "Date of Extraction yyyy-MM-dd"
       )
-      // test purpose
-      extraction_date: String = "2022-03-03"
+      extraction_date: String
   ): Unit = {
-    // TODO validate parameters
-    new Cancellation(
+    validateSimpleJobArguments(
       input_path,
       output_path,
-      mode.getOrElse("error"),
+      mode,
       extraction_date
-    ).run()
+    ) match {
+      case Success(args) =>
+        new Cancellation(
+          args._1,
+          args._2,
+          args._3,
+          args._4
+        ).run()
+      case Failure(e) => throw e
+    }
   }
 }
