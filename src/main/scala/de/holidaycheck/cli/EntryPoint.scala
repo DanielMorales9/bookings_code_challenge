@@ -5,7 +5,7 @@ import de.holidaycheck.cli.Validator.{
   validatePath,
   validateSaveMode
 }
-import de.holidaycheck.jobs.{Bookings, Cancellation}
+import de.holidaycheck.jobs.{Bookings, Cancellation, JoinBookings}
 import wvlet.airframe.launcher.{command, option}
 
 import scala.util.{Failure, Success, Try}
@@ -87,6 +87,59 @@ class EntryPoint() {
           args._2,
           args._3,
           args._4
+        ).run()
+      case Failure(e) => throw e
+    }
+  }
+
+  def validateJoinArguments(
+      inputPath1: String,
+      inputPath2: String,
+      outputPath: String,
+      mode: String,
+      extractionDate: String
+  ): Try[(String, String, String, String, String)] = {
+    for {
+      extractionDate <- validateDateString(extractionDate)
+      inputPath1 <- validatePath(inputPath1)
+      inputPath2 <- validatePath(inputPath2)
+      mode <- validateSaveMode(mode)
+    } yield (inputPath1, inputPath2, outputPath, mode, extractionDate)
+  }
+
+  @command(description = "Joining Data")
+  def joinBookings(
+      @option(prefix = "-b,--bookings", description = "Bookings Input Path")
+      bookingsInputPath: String,
+      @option(
+        prefix = "-c,--cancellation",
+        description = "Cancellation Input Path"
+      )
+      cancellationInputPath: String,
+      @option(prefix = "-o,--output", description = "Output Path")
+      outputPath: String,
+      @option(prefix = "-m,--mode", description = "Mode")
+      mode: String = "error",
+      @option(
+        prefix = "-e,--extraction_date",
+        description = "Date of Extraction yyyy-MM-dd"
+      )
+      extractionDate: String
+  ): Unit = {
+    validateJoinArguments(
+      f"$bookingsInputPath/extraction_date=$extractionDate",
+      f"$cancellationInputPath/extraction_date=$extractionDate",
+      outputPath,
+      mode,
+      extractionDate
+    ) match {
+      case Success(args) =>
+        new JoinBookings(
+          args._1,
+          args._2,
+          args._3,
+          args._4,
+          args._5
         ).run()
       case Failure(e) => throw e
     }

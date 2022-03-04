@@ -4,6 +4,9 @@ import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object Loader {
+  def parquet(inputPath: String)(implicit spark: SparkSession): DataFrame = {
+    spark.read.parquet(inputPath)
+  }
 
   def csv(
       filePath: String,
