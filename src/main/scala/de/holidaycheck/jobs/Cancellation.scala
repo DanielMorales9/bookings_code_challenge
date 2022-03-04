@@ -17,10 +17,10 @@ import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import org.apache.spark.sql.types._
 
 class Cancellation(
-    input_path: String,
-    output_path: String,
+    inputPath: String,
+    outputPath: String,
     saveMode: String,
-    extraction_date: String
+    extractionDate: String
 ) extends Job[(Dataset[DataError], DataFrame)] {
 
   implicit val spark: SparkSession = init_spark_session("Cancellations")
@@ -36,7 +36,7 @@ class Cancellation(
 
   def extract(): (Dataset[DataError], DataFrame) = {
     val initDf = Loader.csv(
-      input_path,
+      inputPath,
       quote = "\"",
       schema = inputSchema
     )
@@ -52,22 +52,22 @@ class Cancellation(
       new ValidateNotNullColumnStage("end_date"),
       new ValidateNotNullColumnStage("cancellation_type"),
       new ParseDateTimeStringStage("end_date"),
-      new AddColumnStringStage("extraction_date", extraction_date)
+      new AddColumnStringStage("extraction_date", extractionDate)
     )
 
     buildPipeline(cancellationPipeline, df).run
   }
 
   def load(df: (Dataset[DataError], DataFrame)): Unit = {
-    Saver.csv(
-      df._1.withColumn("extraction_date", lit(extraction_date)),
-      f"$output_path/errors",
+    Saver.parquet(
+      df._1.withColumn("extraction_date", lit(extractionDate)),
+      f"$outputPath/errors",
       saveMode,
       partitionCols = List("extraction_date")
     )
-    Saver.csv(
+    Saver.parquet(
       df._2,
-      f"$output_path/data",
+      f"$outputPath/data",
       saveMode,
       partitionCols = List("extraction_date")
     )

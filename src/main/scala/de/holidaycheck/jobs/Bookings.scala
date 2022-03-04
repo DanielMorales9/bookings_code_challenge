@@ -22,10 +22,10 @@ import org.apache.spark.sql.types.{
 }
 
 class Bookings(
-    input_path: String,
-    output_path: String,
+    inputPath: String,
+    outputPath: String,
     saveMode: String,
-    extraction_date: String
+    extractionDate: String
 ) extends Job[(Dataset[DataError], DataFrame)] {
 
   implicit val spark: SparkSession = init_spark_session("Bookings")
@@ -43,7 +43,7 @@ class Bookings(
 
   def extract(): (Dataset[DataError], DataFrame) = {
     def initDf: DataFrame = Loader.csv(
-      input_path,
+      inputPath,
       quote = "\"",
       schema = inputSchema
     )
@@ -64,7 +64,7 @@ class Bookings(
       new ParseDateTimeStringStage("booking_date"),
       new ParseDateTimeStringStage("arrival_date"),
       new ParseDateTimeStringStage("departure_date"),
-      new AddColumnStringStage("extraction_date", extraction_date)
+      new AddColumnStringStage("extraction_date", extractionDate)
     )
 
     buildPipeline(bookingPipeline, df).run
@@ -72,15 +72,15 @@ class Bookings(
   }
 
   def load(df: (Dataset[DataError], DataFrame)): Unit = {
-    Saver.csv(
-      df._1.withColumn("extraction_date", lit(extraction_date)),
-      f"$output_path/errors",
+    Saver.parquet(
+      df._1.withColumn("extraction_date", lit(extractionDate)),
+      f"$outputPath/errors",
       saveMode,
       partitionCols = List("extraction_date")
     )
-    Saver.csv(
+    Saver.parquet(
       df._2,
-      f"$output_path/data",
+      f"$outputPath/data",
       saveMode,
       partitionCols = List("extraction_date")
     )

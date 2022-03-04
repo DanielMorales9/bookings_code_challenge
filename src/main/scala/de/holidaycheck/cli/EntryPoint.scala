@@ -13,16 +13,16 @@ import scala.util.{Failure, Success, Try}
 class EntryPoint() {
 
   def validateSimpleJobArguments(
-      input_path: String,
-      output_path: String,
+      inputPath: String,
+      outputPath: String,
       mode: String,
-      extraction_date: String
+      extractionDate: String
   ): Try[(String, String, String, String)] = {
     for {
-      inputPath <- validatePath(input_path)
-      extractionDate <- validateDateString(extraction_date)
+      inputPath <- validatePath(inputPath)
+      extractionDate <- validateDateString(extractionDate)
       mode <- validateSaveMode(mode)
-    } yield (inputPath, output_path, mode, extractionDate)
+    } yield (inputPath, outputPath, mode, extractionDate)
   }
 
   @command(isDefault = true)
@@ -33,22 +33,22 @@ class EntryPoint() {
   @command(description = "Cleaning Bookings Data")
   def bookings(
       @option(prefix = "-i,--input", description = "Input Path")
-      input_path: String,
+      inputPath: String,
       @option(prefix = "-o,--output", description = "Output Path")
-      output_path: String,
+      outputPath: String,
       @option(prefix = "-m,--mode", description = "Mode")
       mode: String = "error",
       @option(
         prefix = "-e,--extraction_date",
         description = "Date of Extraction yyyy-MM-dd"
       )
-      extraction_date: String
+      extractionDate: String
   ): Unit = {
     validateSimpleJobArguments(
-      input_path,
-      output_path,
+      inputPath,
+      outputPath,
       mode,
-      extraction_date
+      extractionDate
     ) match {
       case Success(args) =>
         new Bookings(
@@ -64,22 +64,22 @@ class EntryPoint() {
   @command(description = "Cleansing Cancellation Data")
   def cancellation(
       @option(prefix = "-i,--input", description = "Input Path")
-      input_path: String,
+      inputPath: String,
       @option(prefix = "-o,--output", description = "Output Path")
-      output_path: String,
+      outputPath: String,
       @option(prefix = "-m,--mode", description = "Mode")
       mode: String = "error",
       @option(
         prefix = "-e,--extraction_date",
         description = "Date of Extraction yyyy-MM-dd"
       )
-      extraction_date: String
+      extractionPath: String
   ): Unit = {
     validateSimpleJobArguments(
-      input_path,
-      output_path,
+      inputPath,
+      outputPath,
       mode,
-      extraction_date
+      extractionPath
     ) match {
       case Success(args) =>
         new Cancellation(
