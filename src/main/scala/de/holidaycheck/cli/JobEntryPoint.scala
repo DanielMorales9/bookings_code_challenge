@@ -1,8 +1,9 @@
 package de.holidaycheck.cli
 
-import de.holidaycheck.cli.Validator.{
+import de.holidaycheck.utils.ArgumentValidator.{
   validateDateString,
-  validatePath,
+  validateNotNull,
+  validatePathExistance,
   validateSaveMode
 }
 import de.holidaycheck.jobs.{Bookings, Cancellation, JoinBookings}
@@ -26,7 +27,8 @@ class JobEntryPoint(
       extractionDate: String
   ): Try[(String, String, String, String)] = {
     for {
-      inputPath <- validatePath(inputPath)
+      inputPath <- validatePathExistance(inputPath)
+      outputPath <- validateNotNull(outputPath)
       extractionDate <- validateDateString(extractionDate)
       mode <- validateSaveMode(mode)
     } yield (inputPath, outputPath, mode, extractionDate)
@@ -103,8 +105,9 @@ class JobEntryPoint(
   ): Try[(String, String, String, String, String)] = {
     for {
       extractionDate <- validateDateString(extractionDate)
-      inputPath1 <- validatePath(inputPath1)
-      inputPath2 <- validatePath(inputPath2)
+      inputPath1 <- validatePathExistance(inputPath1)
+      inputPath2 <- validatePathExistance(inputPath2)
+      outputPath <- validateNotNull(outputPath)
       mode <- validateSaveMode(mode)
     } yield (inputPath1, inputPath2, outputPath, mode, extractionDate)
   }

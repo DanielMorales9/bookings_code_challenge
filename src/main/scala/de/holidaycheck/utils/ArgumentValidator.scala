@@ -1,12 +1,11 @@
-package de.holidaycheck.cli
+package de.holidaycheck.utils
 
-import java.text.SimpleDateFormat
 import java.time.LocalDate
-import java.time.format.{DateTimeFormatter, DateTimeParseException}
+import java.time.format.DateTimeParseException
 import scala.reflect.io.File
 import scala.util.{Failure, Success, Try}
 
-object Validator {
+object ArgumentValidator {
 
   def validateSaveMode(mode: String): Try[String] = {
     val modes = List("overwrite", "append", "ignore", "error", "errorifexists")
@@ -17,7 +16,15 @@ object Validator {
     }
   }
 
-  def validatePath(filePath: String): Try[String] = {
+  def validateNotNull(value: String): Try[String] = {
+    if (value != null) {
+      Success(value)
+    } else {
+      Failure(new IllegalArgumentException(f"Path cannot be Null"))
+    }
+  }
+
+  def validatePathExistance(filePath: String): Try[String] = {
     if (File(filePath).exists)
       Success(filePath)
     else
