@@ -3,13 +3,7 @@ package de.holidaycheck.transformations
 import com.github.mrpowers.spark.fast.tests.DataFrameComparer
 import de.holidaycheck.middleware.DataError
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.{
-  IntegerType,
-  LongType,
-  StringType,
-  StructField,
-  StructType
-}
+import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.scalatest.funsuite.AnyFunSuite
 
 class QualifyCancellationCodeStageSpec
@@ -36,7 +30,7 @@ class QualifyCancellationCodeStageSpec
     val expectedData = Seq(
       Row("free"),
       Row("cheap"),
-      Row("unknown")
+      Row("not-cancellable")
     )
 
     val expectedDF = spark.createDataFrame(
