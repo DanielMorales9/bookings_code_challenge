@@ -8,6 +8,7 @@ import de.holidaycheck.middleware.DataFrameOps.{
 }
 import de.holidaycheck.transformations.{
   AddColumnStringStage,
+  CastColumnStage,
   ColumnRenamedStage,
   ParseDateTimeStringStage,
   ValidateNotNullColumnStage
@@ -28,7 +29,7 @@ class Cancellation(
 
   val inputSchema = new StructType(
     Array(
-      StructField("bookingid", LongType),
+      StructField("bookingid", StringType),
       StructField("cancellation_type", IntegerType),
       StructField("enddate", StringType)
     )
@@ -52,6 +53,8 @@ class Cancellation(
       new ColumnRenamedStage("cancellation_type", "cancellation_code"),
       new ValidateNotNullColumnStage("end_date"),
       new ValidateNotNullColumnStage("cancellation_code"),
+      new CastColumnStage("booking_id", "long"),
+      new CastColumnStage("cancellation_code", "int"),
       new ParseDateTimeStringStage("end_date"),
       new AddColumnStringStage("extraction_date", extractionDate)
     )

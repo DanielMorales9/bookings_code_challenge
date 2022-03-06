@@ -6,6 +6,7 @@ import de.holidaycheck.middleware.DataFrameOps.{
 }
 import de.holidaycheck.transformations.{
   AddColumnStringStage,
+  CastColumnStage,
   ParseDateTimeStringStage,
   ValidateAirportCodeStage,
   ValidateNotNullColumnStage
@@ -14,12 +15,7 @@ import de.holidaycheck.io.{Loader, Saver}
 import de.holidaycheck.middleware.DataError
 import org.apache.spark.sql.functions.lit
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
-import org.apache.spark.sql.types.{
-  LongType,
-  StringType,
-  StructField,
-  StructType
-}
+import org.apache.spark.sql.types.{StringType, StructField, StructType}
 
 class Bookings(
     inputPath: String,
@@ -32,7 +28,7 @@ class Bookings(
   implicit val rowKey: String = "booking_id"
   val inputSchema = new StructType(
     Array(
-      StructField("booking_id", LongType),
+      StructField("booking_id", StringType),
       StructField("booking_date", StringType),
       StructField("arrival_date", StringType),
       StructField("departure_date", StringType),
@@ -54,11 +50,12 @@ class Bookings(
       df: (Dataset[DataError], DataFrame)
   ): (Dataset[DataError], DataFrame) = {
     val bookingPipeline = List(
-      new ValidateNotNullColumnStage("booking_date"),
+      new ValidateNotNullColumnStage("booking_id"),
       new ValidateNotNullColumnStage("arrival_date"),
       new ValidateNotNullColumnStage("departure_date"),
       new ValidateNotNullColumnStage("source"),
       new ValidateNotNullColumnStage("destination"),
+      new CastColumnStage("booking_id", "long"),
       new ValidateAirportCodeStage("source"),
       new ValidateAirportCodeStage("destination"),
       new ParseDateTimeStringStage("booking_date"),

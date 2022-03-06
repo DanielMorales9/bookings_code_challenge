@@ -8,6 +8,7 @@ import de.holidaycheck.middleware.DataFrameOps.{
 }
 import de.holidaycheck.transformations.{
   AddColumnStringStage,
+  ColumnRenamedStage,
   QualifyCancellationCodeStage
 }
 import org.apache.spark.sql.functions.lit
@@ -42,6 +43,7 @@ class JoinBookings(
 
     val pipeline = List(
       new QualifyCancellationCodeStage(),
+      new ColumnRenamedStage("end_date", "cancellation_end_date"),
       new AddColumnStringStage("extraction_date", extractionDate)
     )
     buildPipeline(pipeline, df).run

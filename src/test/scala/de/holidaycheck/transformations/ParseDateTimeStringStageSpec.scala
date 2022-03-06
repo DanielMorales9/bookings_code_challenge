@@ -2,6 +2,7 @@ package de.holidaycheck.transformations
 
 import com.github.mrpowers.spark.fast.tests.DataFrameComparer
 import de.holidaycheck.middleware.DataError
+import de.holidaycheck.utils.DateTimeUtils.parseDateTime
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{
   StringType,
@@ -11,9 +12,6 @@ import org.apache.spark.sql.types.{
 }
 import org.scalatest.funsuite.AnyFunSuite
 
-import java.sql.Timestamp
-import java.text.SimpleDateFormat
-
 class ParseDateTimeStringStageSpec
     extends AnyFunSuite
     with DataFrameComparer
@@ -22,15 +20,6 @@ class ParseDateTimeStringStageSpec
   import spark.implicits._
 
   implicit val rowKey: String = "id"
-
-  private def parseDateTime(
-      dateTimeString: String,
-      dateTimeFormat: String = "yyyy-MM-dd hh:mm:ss.SSS"
-  ): Timestamp = {
-    val dateFormat = new SimpleDateFormat(dateTimeFormat)
-    val parsedDate = dateFormat.parse(dateTimeString)
-    new Timestamp(parsedDate.getTime)
-  }
 
   test("format dateTimeString to Timestamp") {
 
