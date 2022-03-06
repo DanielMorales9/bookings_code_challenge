@@ -2,7 +2,7 @@ package de.holidaycheck.cli
 
 import wvlet.airframe.launcher.{command, option}
 
-class EntryPoint(
+class ReportEntryPoint(
     @option(
       prefix = "-h,--help",
       description = "display help messages",
@@ -11,9 +11,9 @@ class EntryPoint(
     help: Boolean = false
 ) {
 
-  @command(isDefault = true)
-  def default(): Unit = {
-    println("Type --help to display the list of commands")
+  @command(description = "does nothing")
+  def dummy(): Unit = {
+    println("splash spalsh! Hat keine wirkung")
   }
 
 }
