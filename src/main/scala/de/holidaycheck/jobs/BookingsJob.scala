@@ -17,7 +17,7 @@ import org.apache.spark.sql.functions.lit
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 
-class Bookings(
+class BookingsJob(
     inputPath: String,
     outputPath: String,
     saveMode: String,

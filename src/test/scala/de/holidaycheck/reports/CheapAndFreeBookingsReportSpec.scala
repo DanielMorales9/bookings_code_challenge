@@ -8,18 +8,19 @@ import org.apache.spark.sql.types._
 import org.mockito.MockitoSugar.{mock, when}
 import org.scalatest.funsuite.AnyFunSuite
 
-class NumberOfBookingsPerDaySpec
+class CheapAndFreeBookingsReportSpec
     extends AnyFunSuite
     with DataFrameComparer
     with SparkSessionTestWrapper {
 
   import spark.implicits._
 
-  test("testing number of bookings per day report") {
-    val mockJob = mock[NumberOfBookingsPerDay]
-    when(mockJob.init_spark_session("NumberOfBookingsPerDay")).thenReturn(spark)
+  test("testing cheap and free bookings report") {
+    val mockJob = mock[CheapAndFreeBookingsReport]
+    when(mockJob.init_spark_session("CheapAndFreeBookingsReport"))
+      .thenReturn(spark)
 
-    val job = new NumberOfBookingsPerDay(
+    val job = new CheapAndFreeBookingsReport(
       "inputPath",
       "outputPath",
       "error"
@@ -28,46 +29,52 @@ class NumberOfBookingsPerDaySpec
     val sourceDF = Seq(
       (
         14723469L,
+        "free",
         parseDateTime("2021-06-09 17:32:10.000")
       ),
       (
         14723460L,
+        "cheap",
         parseDateTime("2021-06-09 15:32:10.000")
       ),
       (
         14698329L,
+        "not-cancellable",
         parseDateTime("2021-05-27 21:40:33.000")
       )
     ).toDF(
       "booking_id",
-      "booking_date"
+      "cancellation_type",
+      "cancellation_end_date"
     )
 
     val inputDF = sourceDF
 
     val expectedData = Seq(
       Row(
-        "2021-06-09",
-        2L
+        14723469L,
+        "free",
+        parseDateTime("2021-06-09 17:32:10.000")
       ),
       Row(
-        "2021-05-27",
-        1L
+        14723460L,
+        "cheap",
+        parseDateTime("2021-06-09 15:32:10.000")
       )
     )
 
-    val actualDF = job.transform(inputDF).sort("date")
+    val actualDF = job.transform(inputDF)
     val expectedDF = spark
       .createDataFrame(
         spark.sparkContext.parallelize(expectedData),
         StructType(
           Array(
-            StructField("date", StringType),
-            StructField("num_bookings", LongType, nullable = false)
+            StructField("booking_id", LongType, nullable = false),
+            StructField("cancellation_type", StringType),
+            StructField("cancellation_end_date", TimestampType)
           )
         )
       )
-      .sort("date")
 
     assertSmallDatasetEquality(actualDF, expectedDF)
   }

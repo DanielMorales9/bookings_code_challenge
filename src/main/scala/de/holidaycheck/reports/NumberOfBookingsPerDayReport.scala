@@ -5,7 +5,7 @@ import de.holidaycheck.jobs.JobTemplate
 import org.apache.spark.sql.functions.{col, date_format}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-class NumberOfBookingsPerDay(
+class NumberOfBookingsPerDayReport(
     inputPath: String,
     outputPath: String,
     saveMode: String

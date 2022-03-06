@@ -9,7 +9,7 @@ import org.apache.spark.sql.types._
 import org.mockito.MockitoSugar.{mock, when}
 import org.scalatest.funsuite.AnyFunSuite
 
-class CancellationSpec
+class CancellationJobSpec
     extends AnyFunSuite
     with DataFrameComparer
     with SparkSessionTestWrapper {
@@ -17,11 +17,11 @@ class CancellationSpec
   import spark.implicits._
 
   test("testing Cancellation job's transformation") {
-    val mockJob = mock[Cancellation]
+    val mockJob = mock[CancellationJob]
     when(mockJob.init_spark_session("Cancellation")).thenReturn(spark)
 
     val job =
-      new Cancellation("inputPath", "outputPath", "error", "2022-01-01")
+      new CancellationJob("inputPath", "outputPath", "error", "2022-01-01")
 
     val sourceDF = Seq(
       (

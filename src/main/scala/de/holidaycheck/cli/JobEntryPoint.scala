@@ -6,19 +6,12 @@ import de.holidaycheck.utils.ArgumentValidator.{
   validatePathExistance,
   validateSaveMode
 }
-import de.holidaycheck.jobs.{Bookings, Cancellation, JoinBookings}
+import de.holidaycheck.jobs.{BookingsJob, CancellationJob, JoinBookingsJob}
 import wvlet.airframe.launcher.{command, option}
 
 import scala.util.{Failure, Success, Try}
 
-class JobEntryPoint(
-    @option(
-      prefix = "-h,--help",
-      description = "display help messages",
-      isHelp = true
-    )
-    help: Boolean = false
-) {
+class JobEntryPoint {
 
   def validateSimpleJobArguments(
       inputPath: String,
@@ -55,7 +48,7 @@ class JobEntryPoint(
       extractionDate
     ) match {
       case Success(args) =>
-        new Bookings(
+        new BookingsJob(
           args._1,
           args._2,
           args._3,
@@ -86,7 +79,7 @@ class JobEntryPoint(
       extractionPath
     ) match {
       case Success(args) =>
-        new Cancellation(
+        new CancellationJob(
           args._1,
           args._2,
           args._3,
@@ -139,7 +132,7 @@ class JobEntryPoint(
       extractionDate
     ) match {
       case Success(args) =>
-        new JoinBookings(
+        new JoinBookingsJob(
           args._1,
           args._2,
           args._3,

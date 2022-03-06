@@ -14,7 +14,7 @@ import de.holidaycheck.transformations.{
 import org.apache.spark.sql.functions.lit
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
-class JoinBookings(
+class JoinBookingsJob(
     bookingsPath: String,
     cancellationPath: String,
     outputPath: String,

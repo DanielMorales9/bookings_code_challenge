@@ -9,46 +9,43 @@ import org.apache.spark.sql.types._
 import org.mockito.MockitoSugar.{mock, when}
 import org.scalatest.funsuite.AnyFunSuite
 
-class JoinBookingsSpec
+class BookingsJobSpec
     extends AnyFunSuite
     with DataFrameComparer
     with SparkSessionTestWrapper {
 
   import spark.implicits._
 
-  test("testing join job's transformation") {
-    val mockJob = mock[JoinBookings]
-    when(mockJob.init_spark_session("JoinBookings")).thenReturn(spark)
+  test("testing Bookings job's transformation") {
+    val mockJob = mock[BookingsJob]
+    when(mockJob.init_spark_session("Bookings")).thenReturn(spark)
 
-    val job =
-      new JoinBookings(
-        "bookingsPath",
-        "cancellationPath",
-        "outputPath",
-        "error",
-        "2022-01-01"
-      )
+    val job = new BookingsJob("inputPath", "outputPath", "error", "2022-01-01")
 
     val sourceDF = Seq(
       (
-        14723469L,
-        parseDateTime("2021-06-09 17:32:10.000"),
-        parseDateTime("2021-06-09 17:32:10.000"),
-        parseDateTime("2021-08-27 00:00:00.000"),
+        "14723469",
+        "2021-06-09 17:32:10.000",
+        "2021-08-27 00:00:00.000",
+        "2021-08-15 00:00:00.000",
         "CGN",
-        "AYT",
-        53,
-        parseDateTime("2021-08-15 00:00:00.000")
+        "AYT"
       ),
       (
-        14698329L,
-        parseDateTime("2021-05-27 21:40:33.000"),
-        parseDateTime("2021-09-10 00:00:00.000"),
-        parseDateTime("2021-08-25 00:00:00.000"),
+        "14698329",
+        "2021-05-27 21:40:33.000",
+        "2021-09-10 00:00:00.000",
+        "2021-08-25 00:00:00.000",
         "NUE",
-        "RHO",
-        52,
-        parseDateTime("2021-05-27 21:40:33.000")
+        "RHO"
+      ),
+      (
+        "broken-booking-id",
+        "2021-06-26 12:38:26.000",
+        "2021-08-10 00:00:00.000",
+        "2021-08-03 00:00:00.000",
+        "MUC",
+        "PMI"
       )
     ).toDF(
       "booking_id",
@@ -56,9 +53,7 @@ class JoinBookingsSpec
       "arrival_date",
       "departure_date",
       "source",
-      "destination",
-      "cancellation_code",
-      "end_date"
+      "destination"
     )
 
     val inputDF = (DataFrameOps.emptyErrorDataset(spark), sourceDF)
@@ -67,12 +62,10 @@ class JoinBookingsSpec
       Row(
         14723469L,
         parseDateTime("2021-06-09 17:32:10.000"),
-        parseDateTime("2021-06-09 17:32:10.000"),
         parseDateTime("2021-08-27 00:00:00.000"),
+        parseDateTime("2021-08-15 00:00:00.000"),
         "CGN",
         "AYT",
-        parseDateTime("2021-08-15 00:00:00.000"),
-        "cheap",
         "2022-01-01"
       ),
       Row(
@@ -82,8 +75,6 @@ class JoinBookingsSpec
         parseDateTime("2021-08-25 00:00:00.000"),
         "NUE",
         "RHO",
-        parseDateTime("2021-05-27 21:40:33.000"),
-        "free",
         "2022-01-01"
       )
     )
@@ -93,20 +84,30 @@ class JoinBookingsSpec
       spark.sparkContext.parallelize(expectedData),
       StructType(
         Array(
-          StructField("booking_id", LongType, nullable = false),
-          StructField("booking_date", TimestampType, nullable = true),
-          StructField("arrival_date", TimestampType, nullable = true),
-          StructField("departure_date", TimestampType, nullable = true),
-          StructField("source", StringType, nullable = true),
-          StructField("destination", StringType, nullable = true),
-          StructField("cancellation_end_date", TimestampType, nullable = true),
-          StructField("cancellation_type", StringType, nullable = false),
+          StructField("booking_id", LongType),
+          StructField("booking_date", TimestampType),
+          StructField("arrival_date", TimestampType),
+          StructField("departure_date", TimestampType),
+          StructField("source", StringType),
+          StructField("destination", StringType),
           StructField("extraction_date", StringType, nullable = false)
         )
       )
     )
 
-    val expectedErrors = spark.emptyDataset[DataError]
+    val expectedErrors = spark
+      .createDataset(
+        Seq(
+          DataError(
+            "broken-booking-id",
+            "CastColumnStage",
+            "booking_id",
+            "broken-booking-id",
+            "Unable to cast broken-booking-id to long"
+          )
+        )
+      )
+
     assertSmallDataFrameEquality(actualDF, expectedDF)
 
     assertSmallDatasetEquality(actualErrors, expectedErrors)
