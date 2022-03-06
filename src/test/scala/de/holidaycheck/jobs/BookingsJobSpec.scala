@@ -66,6 +66,7 @@ class BookingsJobSpec
         parseDateTime("2021-08-15 00:00:00.000"),
         "CGN",
         "AYT",
+        0L,
         "2022-01-01"
       ),
       Row(
@@ -75,6 +76,7 @@ class BookingsJobSpec
         parseDateTime("2021-08-25 00:00:00.000"),
         "NUE",
         "RHO",
+        1L,
         "2022-01-01"
       )
     )
@@ -90,6 +92,7 @@ class BookingsJobSpec
           StructField("departure_date", TimestampType),
           StructField("source", StringType),
           StructField("destination", StringType),
+          StructField("rowKey", LongType, nullable = false),
           StructField("extraction_date", StringType, nullable = false)
         )
       )
@@ -99,7 +102,7 @@ class BookingsJobSpec
       .createDataset(
         Seq(
           DataError(
-            "broken-booking-id",
+            "2",
             "CastColumnStage",
             "booking_id",
             "broken-booking-id",

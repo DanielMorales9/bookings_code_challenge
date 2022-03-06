@@ -24,8 +24,8 @@ class JoinBookingsJob(
   implicit val spark: SparkSession = init_spark_session("JoinBookings")
 
   def extract(): (Dataset[DataError], DataFrame) = {
-    val bookingDF = Loader.parquet(bookingsPath)
-    val cancellationDF = Loader.parquet(cancellationPath)
+    val bookingDF = Loader.parquet(bookingsPath).drop("rowKey")
+    val cancellationDF = Loader.parquet(cancellationPath).drop("rowKey")
     (
       emptyErrorDataset(spark),
       bookingDF.join(

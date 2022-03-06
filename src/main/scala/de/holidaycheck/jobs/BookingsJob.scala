@@ -6,6 +6,7 @@ import de.holidaycheck.middleware.DataFrameOps.{
 }
 import de.holidaycheck.transformations.{
   AddColumnStringStage,
+  AddRowKeyStage,
   CastColumnStage,
   ParseDateTimeStringStage,
   ValidateAirportCodeStage,
@@ -25,7 +26,7 @@ class BookingsJob(
 ) extends JobTemplate[(Dataset[DataError], DataFrame)] {
 
   implicit val spark: SparkSession = init_spark_session("Bookings")
-  implicit val rowKey: String = "booking_id"
+  implicit val rowKey: String = "rowKey"
   val inputSchema = new StructType(
     Array(
       StructField("booking_id", StringType),
@@ -50,6 +51,7 @@ class BookingsJob(
       df: (Dataset[DataError], DataFrame)
   ): (Dataset[DataError], DataFrame) = {
     val bookingPipeline = List(
+      new AddRowKeyStage(),
       new ValidateNotNullColumnStage("booking_id"),
       new ValidateNotNullColumnStage("arrival_date"),
       new ValidateNotNullColumnStage("departure_date"),

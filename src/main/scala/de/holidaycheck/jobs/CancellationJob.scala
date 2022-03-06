@@ -8,6 +8,7 @@ import de.holidaycheck.middleware.DataFrameOps.{
 }
 import de.holidaycheck.transformations.{
   AddColumnStringStage,
+  AddRowKeyStage,
   CastColumnStage,
   ColumnRenamedStage,
   ParseDateTimeStringStage,
@@ -25,7 +26,7 @@ class CancellationJob(
 ) extends JobTemplate[(Dataset[DataError], DataFrame)] {
 
   implicit val spark: SparkSession = init_spark_session("Cancellations")
-  implicit val rowKey: String = "booking_id"
+  implicit val rowKey: String = "rowKey"
 
   val inputSchema = new StructType(
     Array(
@@ -48,6 +49,7 @@ class CancellationJob(
       df: (Dataset[DataError], DataFrame)
   ): (Dataset[DataError], DataFrame) = {
     val cancellationPipeline = List(
+      new AddRowKeyStage(),
       new ColumnRenamedStage("enddate", "end_date"),
       new ColumnRenamedStage("bookingid", "booking_id"),
       new ColumnRenamedStage("cancellation_type", "cancellation_code"),

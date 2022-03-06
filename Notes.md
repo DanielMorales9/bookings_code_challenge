@@ -189,3 +189,5 @@ spark-submit \
 
 # Future Work
 - Introduce a global Logging Level options for Spark Jobs and Reports
+- Refactoring potential in cli classes (duplicated code due to parameter validation)
+  - Use of reflection to instantiate jobs or report by name

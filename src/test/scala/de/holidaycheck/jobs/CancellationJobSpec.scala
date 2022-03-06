@@ -52,12 +52,14 @@ class CancellationJobSpec
         14723469L,
         53,
         parseDateTime("2021-06-09 17:32:10.000"),
+        0L,
         "2022-01-01"
       ),
       Row(
         14698329L,
         52,
         parseDateTime("2021-05-27 21:40:33.000"),
+        1L,
         "2022-01-01"
       )
     )
@@ -70,6 +72,7 @@ class CancellationJobSpec
           StructField("booking_id", LongType),
           StructField("cancellation_code", IntegerType),
           StructField("end_date", TimestampType),
+          StructField("rowKey", LongType, nullable = false),
           StructField("extraction_date", StringType, nullable = false)
         )
       )
@@ -79,7 +82,7 @@ class CancellationJobSpec
       .createDataset(
         Seq(
           DataError(
-            "14698323",
+            "2",
             "CastColumnStage",
             "cancellation_code",
             "br",
