@@ -2,7 +2,7 @@ package de.holidaycheck.jobs
 
 import org.apache.spark.sql.SparkSession
 
-abstract class Job[T] {
+abstract class JobTemplate[T] {
 
   implicit val spark: SparkSession
 

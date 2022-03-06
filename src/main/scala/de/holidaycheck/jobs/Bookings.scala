@@ -22,7 +22,7 @@ class Bookings(
     outputPath: String,
     saveMode: String,
     extractionDate: String
-) extends Job[(Dataset[DataError], DataFrame)] {
+) extends JobTemplate[(Dataset[DataError], DataFrame)] {
 
   implicit val spark: SparkSession = init_spark_session("Bookings")
   implicit val rowKey: String = "booking_id"

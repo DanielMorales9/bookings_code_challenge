@@ -1,6 +1,6 @@
 # CLI Description
 ```bash
-spark-submit --class "de.holidaycheck.Main" [...] --help
+spark-submit [...] --help
 
 usage: entry_point [options] <command name>
 
@@ -15,7 +15,7 @@ usage: entry_point [options] <command name>
 
 ## Job Entrypoint
 ```bash
-spark-submit --class "de.holidaycheck.Main" [...] job --help
+spark-submit [...] job --help
 
 usage: [global options] job [options] <command name>
   jobs entrypoint
@@ -33,7 +33,7 @@ usage: [global options] job [options] <command name>
 
 ### Launching Bookings Job
 ```bash
-spark-submit --class "de.holidaycheck.Main" [...] job bookings --help
+spark-submit [...] job bookings --help
 
 usage: bookings 
   Cleaning Bookings Data
@@ -47,11 +47,24 @@ usage: bookings
  -m, --mode:[MODE]                       Mode
  -e, --extraction_date:[EXTRACTIONDATE]  Date of Extraction yyyy-MM-dd
 ```
+Full command:
+```bash
+spark-submit \
+  --class "de.holidaycheck.Main" \
+  --master local[4] \
+  target/scala-2.12/code_challenge-assembly-1.0.jar \
+  job bookings \
+    -i bookings.csv \
+    -o bookings \
+    -m overwrite \
+    -e 2022-03-03
+```
+
 
 ### Launching Cancellation Job
 
 ```bash
-spark-submit --class "de.holidaycheck.Main" [...] job cancellation --help
+spark-submit [...] job cancellation --help
 
 usage: cancellation
 Cleansing Cancellation Data
@@ -65,10 +78,23 @@ Cleansing Cancellation Data
 -m, --mode:[MODE]                       Mode
 -e, --extraction_date:[EXTRACTIONPATH]  Date of Extraction yyyy-MM-dd
 ```
+Full Command:
+```bash
+spark-submit \
+  --class "de.holidaycheck.Main" \
+  --master local[4] \
+  target/scala-2.12/code_challenge-assembly-1.0.jar \
+  job cancellation \
+    -i cancellation.csv \
+    -o cancellation \
+    -m overwrite \
+    -e 2022-03-03
+```
+
 
 ### Launching Join Job
 ````bash
-spark-submit --class "de.holidaycheck.Main" [...] job joinBookings --help
+spark-submit [...] job joinBookings --help
 
 usage: joinBookings 
   Joining Data
@@ -82,5 +108,29 @@ usage: joinBookings
  -o, --output:[OUTPUTPATH]                   Output Path
  -m, --mode:[MODE]                           Mode
  -e, --extraction_date:[EXTRACTIONDATE]      Date of Extraction yyyy-MM-dd
-
 ````
+Full Command:
+```bash
+spark-submit \
+  --class "de.holidaycheck.Main" \
+  --master local[4] \
+  target/scala-2.12/code_challenge-assembly-1.0.jar \
+  job joinBookings \
+    -b bookings/data \
+    -c cancellation/data \
+    -o flatTable \
+    -m overwrite \
+    -e 2022-03-03
+```
+
+### Launching Number of Bookings per Day Report
+```bash
+spark-submit \
+  --class "de.holidaycheck.Main" \
+  --master local[4] \
+  target/scala-2.12/code_challenge-assembly-1.0.jar \
+  report numBookingsPerDay \
+    -i flatTable/data/extraction_date=2022-03-03 \
+    -m overwrite \
+    -o reports/numBookingsPerDay
+```
