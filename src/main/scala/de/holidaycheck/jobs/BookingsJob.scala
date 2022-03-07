@@ -53,6 +53,7 @@ class BookingsJob(
     val bookingPipeline = List(
       new AddRowKeyStage(),
       new ValidateNotNullColumnStage("booking_id"),
+      new ValidateNotNullColumnStage("booking_date"),
       new ValidateNotNullColumnStage("arrival_date"),
       new ValidateNotNullColumnStage("departure_date"),
       new ValidateNotNullColumnStage("source"),
