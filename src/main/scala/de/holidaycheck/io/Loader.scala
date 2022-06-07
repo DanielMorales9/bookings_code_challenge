@@ -8,6 +8,8 @@ object Loader {
     spark.read.parquet(inputPath)
   }
 
+  def sql() = {}
+
   def csv(
       filePath: String,
       header: Boolean = true,

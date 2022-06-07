@@ -303,5 +303,3 @@ spark-submit \
 - E2E tests
 - Refactoring potential in cli classes (duplicated code due to parameter validation)
 - Use of reflection to instantiate jobs or reports by name
-- 
-
